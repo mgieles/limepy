@@ -26,7 +26,7 @@ setup(
     packages=[
         'limepy',
     ],
-    package_dir={'limepy': '.'},
+    package_dir={'limepy': 'src/'},
     include_package_data=True,
     install_requires=requirements,
     license="BSD",

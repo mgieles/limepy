@@ -4,7 +4,7 @@ from __future__ import division, absolute_import
 import numpy
 from numpy import exp, sqrt, pi, sin
 from scipy.interpolate import PiecewisePolynomial, interp1d
-from scipy.special import gamma, gammainc, dawsn, hyp1f1 
+from scipy.special import gamma, gammainc, dawsn, hyp1f1
 from scipy.integrate import ode, quad, simps
 from math import factorial
 
@@ -52,23 +52,23 @@ class limepy:
 
 
         Examples:
-        
+
         Construct a Woolley model with W0 = 7 and print r_t/r_0 and r_v/r_h
 
         >>> k = limepy(7, 0)
         >>> print k.rt/k.r0, k.rv/k.rh
         >>> 19.1293485709 1.17783655227
-        
+
         Construct a Michie-King model and print r_a/r_h and 2*k.Kr/k.Kt
 
         >>> a = limepy(7, 1, ra=5)
         >>> print a.ra/a.rh, 2*a.Kr/a.Kt
         >>> 1.03378595801 1.36280947104
-        
-        Create a Wilson model with W_0 = 12 in Henon/N-body units: G = M = 
-        r_v = 1 and print the normalisation constant A of the DF and the 
+
+        Create a Wilson model with W_0 = 12 in Henon/N-body units: G = M =
+        r_v = 1 and print the normalisation constant A of the DF and the
         value of the DF in the centre:
-        
+
         >>> w = limepy(12, 2, scale=True, GS=1, MS=1, RS=1, scale_radius='rv')
         >>> print w.A, w.df(0,0)
         >>> [ 0.00800902] [ 1303.40245567]
@@ -93,7 +93,7 @@ class limepy:
                 if self.niter > 100:
                     self.converged=False
 
-        self.r0 = 1.0 
+        self.r0 = 1.0
         if (self.multi): self.r0j = sqrt(self.sig2)*self.r0
 
         self._poisson(self.potonly)
@@ -115,7 +115,7 @@ class limepy:
 
     def _set_kwargs(self, W0, g, **kwargs):
         if (g<0): raise ValueError("Error: g must be larger or equal to 0")
-        
+
         self.W0, self.g = W0, g
 
         self.MS, self.RS, self.GS = 1e5, 3, 0.004302
@@ -260,7 +260,7 @@ class limepy:
         # Compute radii to be able to scale in case potonly=True
         self.U = self.y[1+self.nmbin,-1]  - 0.5*self.G*self.M**2/self.rt
 
-        # Get half-mass radius from cubic interpolation 
+        # Get half-mass radius from cubic interpolation
 
         ih = numpy.searchsorted(self.mc, 0.5*self.mc[-1])-1
         rhotmp=numpy.zeros(2)
@@ -516,8 +516,8 @@ class limepy:
             betaterm = 1 if i==0 else 1 - self.beta[c]*R[i]**2/self.r[c]**2
             v2p[i] = abs(2.0*simps(betaterm*self.rho[c]*self.v2r[c], x=z)/Sigma[i])
         self.R, self.Sigma, self.v2p = R, Sigma, v2p
-        return 
-            
+        return
+
     def interp_phi(self, r):
         """ Returns interpolated potential at r, works on scalar and arrays """
 
@@ -576,7 +576,7 @@ class limepy:
         E = (phi-0.5*v2)/self.sig2[j]          # Dimensionless positive energy
         DF[c] = exp(E[c])
 
-        # Float truncation parameter 
+        # Float truncation parameter
         # Following Gomez-Leyton & Velazquez 2014, J. Stat. Mech. 4, 6
 
         if (self.g>0): DF[c] *= gammainc(self.g, E[c])

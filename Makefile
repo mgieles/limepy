@@ -32,7 +32,7 @@ clean-test:
 	rm -fr htmlcov/
 
 lint:
-	flake8 dflab tests
+	flake8 limepy tests
 
 test:
 	python setup.py test
@@ -41,15 +41,15 @@ test-all:
 	tox
 
 coverage:
-	coverage run --source dflab setup.py test
+	coverage run --source limepy setup.py test
 	coverage report -m
 	coverage html
 	open htmlcov/index.html
 
 docs:
-	rm -f docs/dflab.rst
+	rm -f docs/limepy.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ dflab
+	sphinx-apidoc -o docs/ limepy
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	open docs/_build/html/index.html

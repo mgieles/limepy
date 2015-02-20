@@ -2,13 +2,13 @@
 Usage
 ========
 
-To use dflab in a project::
+To use limepy in a project::
 
-    import dflab
+    import limepy
 
 To import the class limepy::
 
-    from dflab import limepy
+    from limepy import limepy
 
 .. include:: usageexamples.rst
 

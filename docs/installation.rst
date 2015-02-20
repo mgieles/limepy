@@ -4,8 +4,8 @@ Installation
 
 At the command line::
 
-    $ git clone https://github.com/mgieles/dflab.git
-    $ cd dflab
+    $ git clone https://github.com/mgieles/limepy.git
+    $ cd limepy
     $ python setup.py install
 
 or::
