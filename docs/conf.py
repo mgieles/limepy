@@ -34,8 +34,6 @@ class Mock(MagicMock):
 MOCK_MODULES = ['numpy', 'scipy', 'scipy.interpolate', 'scipy.special',
                 'scipy.integrate']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-print sys.path
-
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory is
@@ -51,6 +49,7 @@ project_root = os.path.dirname(cwd)
 # This lets us ensure that the source package is imported, and that its
 # version is used.
 sys.path.insert(0, project_root)
+print sys.path
 
 import limepy
 

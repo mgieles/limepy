@@ -6,11 +6,11 @@ Human readable intro
 Class
 -----
 
-.. autoclass::  dflab.limepy
+.. autoclass::  limepy.limepy
    :members: __init__
 
 Methods
 -------
 
-.. automethod:: dflab.limepy.df
+.. automethod:: limepy.limepy.df
 
