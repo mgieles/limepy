@@ -24,6 +24,6 @@ Features
 
 * Normalised DF values
 * Density and velocity moments
-* Projected properties of the models (TBD)
+* Projected properties of the models 
 * Initial conditions generator (TBD)
 
