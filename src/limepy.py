@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, absolute_import
-
 import numpy
 from numpy import exp, sqrt, pi, sin
 from scipy.interpolate import PiecewisePolynomial, interp1d
@@ -121,7 +120,7 @@ class limepy:
         self.MS, self.RS, self.GS = 1e5, 3, 0.004302
         self.scale_radius = 'rh'
         self.scale = False
-        self.maxr = 1e6
+        self.maxr = 1e10
         self.max_step = self.maxr
         self.diffcrit = 1e-10
 
@@ -192,6 +191,7 @@ class limepy:
         self.diff = sum((self._Mjtot/sum(self._Mjtot) -
                          self.Mj/sum(self.Mj))**2)/len(self._Mjtot)
         self.niter+=1
+        self.nstep=1
         if (self.verbose):
             Mjin,Mjit="", ""
             for j in range(self.nmbin):
@@ -230,7 +230,7 @@ class limepy:
         else:
             self.rt = self.r[-1]
 
-        if (self.rt < 1e6)&(sol.successful()):
+        if (self.rt < self.maxr)&(sol.successful()):
             self.converged=True
         else:
             self.converged=False
@@ -499,14 +499,14 @@ class limepy:
     def project(self):
         """ Compute projected mass density (Sigma) and projected <v2> profiles """
 
-        if (self.multi):
-            print " Projection of multi-mass system not yet implemented"
-            return
-
         R = self.r
         Sigma = numpy.zeros(self.nstep)
         v2p = numpy.zeros(self.nstep)
 
+        if (self.multi):
+            Sigmaj = numpy.zeros((self.nmbin, self.nstep))
+            v2jp = numpy.zeros((self.nmbin, self.nstep))
+            
         for i in range(self.nstep-1):
             c = (self.r >= R[i])
             r = self.r[c]
@@ -515,7 +515,18 @@ class limepy:
             Sigma[i] = 2.0*simps(self.rho[c], x=z)
             betaterm = 1 if i==0 else 1 - self.beta[c]*R[i]**2/self.r[c]**2
             v2p[i] = abs(2.0*simps(betaterm*self.rho[c]*self.v2r[c], x=z)/Sigma[i])
+
+            if (self.multi):
+                for j in range(self.nmbin):
+                    Sigmaj[j,i] = 2.0*simps(self.rhoj[j,c], x=z)
+                    betaterm = 1 if i==0 else 1 - self.betaj[j,c]*R[i]**2/self.r[c]**2
+                    v2jp[j,i] = abs(2.0*simps(betaterm*self.rhoj[j,c]*self.v2rj[j,c], x=z)
+                    v2jp[j,i]/=Sigmaj[j,i])
+
+
         self.R, self.Sigma, self.v2p = R, Sigma, v2p
+        if (self.multi):
+            self.Sigmaj, self.v2jp = Sigmaj, v2jp            
         return
 
     def interp_phi(self, r):

@@ -51,6 +51,11 @@ project_root = os.path.dirname(cwd)
 sys.path.insert(0, project_root)
 print sys.path
 
+import platform                                                                  
+print 'Version      :', platform.python_version()                                
+print 'Version tuple:', platform.python_version_tuple()                          
+print 'Compiler     :', platform.python_compiler()                               
+print 'Build        :', platform.python_build()  
 import limepy
 
 # -- General configuration ---------------------------------------------

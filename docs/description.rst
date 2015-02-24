@@ -15,16 +15,16 @@ The isotropic distribution functions are defined as `(Gomez-Leyton \&
 Velazquez 2014) <http://adsabs.harvard.edu/abs/2014JSMTE..04..006G>`_
 
 .. math::
-   f_g(E) = \displaystyle \begin{cases}
-   A\exp(E), &g=0 \\
-   \displaystyle A\exp(E)P(g, E), &g>1
+   f(\hat{E}) = \displaystyle \begin{cases}
+   A\exp(\hat{E}), &g=0 \\
+   \displaystyle A\exp(\hat{E})P(\hat{E}; g), &g>1
    \end{cases}
 
-where :math:`\displaystyle E = \frac{\phi - \phi(r_{\rm
+where :math:`\displaystyle \hat{E} = \frac{\phi - \phi(r_{\rm
 t}) - v^2/2}{\sigma^2}`, :math:`\sigma` is a velocity scale, :math:`0 <
-\phi-\phi(r_{\rm t}) <W_0/\sigma^2` is the (positive) potential and :math:`P(s,x)` is the
-regularised lower incomplete gamma function :math:`P(s,x) =
-\gamma(s,x)/\Gamma(x)`. For some integer values of *g* several well
+\phi-\phi(r_{\rm t}) <\phi_0/\sigma^2` is the (positive) potential and :math:`P(x; s)` is the
+regularised lower incomplete gamma function :math:`P(x; s) =
+\gamma(x; s)/\Gamma(x)`. For some integer values of *g* several well
 known models are found
 
 *  g = 0 : `Woolley (1954) <http://adsabs.harvard.edu/abs/1954MNRAS.114..191W>`_
@@ -39,9 +39,9 @@ Radial anisotropy a la `Michie (1963)
 included as follows
 
 .. math::
-   f_g(E, J^2) = \exp(-J^2)f_g(E),
+   f(E, J^2) = \exp(-\hat{J}^2)f(\hat{E}),
 
-where :math:`J^2 = (rv_t)^2/(2r_{\rm a}^2\sigma^2)`, here :math:`r_{\rm a}` is the user-defined anisotropy radius.
+where :math:`\hat{J}^2 = (rv_t)^2/(2r_{\rm a}^2\sigma^2)`, here :math:`r_{\rm a}` is the user-defined anisotropy radius.
 
 Multi-mass model
 ^^^^^^^^^^^^^^^^
