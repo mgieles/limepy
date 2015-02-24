@@ -521,7 +521,7 @@ class limepy:
                     Sigmaj[j,i] = 2.0*simps(self.rhoj[j,c], x=z)
                     betaterm = 1 if i==0 else 1 - self.betaj[j,c]*R[i]**2/self.r[c]**2
                     v2jp[j,i] = abs(2.0*simps(betaterm*self.rhoj[j,c]*self.v2rj[j,c], x=z))
-                    v2jp[j,i]/=Sigmaj[j,i])
+                    v2jp[j,i]/=Sigmaj[j,i]
 
 
         self.R, self.Sigma, self.v2p = R, Sigma, v2p
