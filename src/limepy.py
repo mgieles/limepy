@@ -226,9 +226,9 @@ class limepy:
 
         if (p<=0.5):
             rtfac = (1 - sqrt(1-2*p))/p
-            self.rt = rtfac*self.r[-1] if (rtfac > 1) else self.r[-1]
+            self.rt = rtfac*self.r[-1] if (rtfac > 1) else 1.0000001*self.r[-1]
         else:
-            self.rt = self.r[-1]
+            self.rt = 1.000001*self.r[-1]
 
         if (self.rt < self.maxr)&(sol.successful()):
             self.converged=True
@@ -441,6 +441,7 @@ class limepy:
         # Generate piecewise 3th order polynomials to connect phi, using phi'
         self._interpolator_set = True
         phi_and_derivs = numpy.vstack([[self.phi],[self.dp1]]).T
+
         self._phi_poly = PiecewisePolynomial(self.r,phi_and_derivs,direction=1)
 
     def _scale(self):
@@ -506,7 +507,7 @@ class limepy:
         if (self.multi):
             Sigmaj = numpy.zeros((self.nmbin, self.nstep))
             v2jp = numpy.zeros((self.nmbin, self.nstep))
-            
+             
         for i in range(self.nstep-1):
             c = (self.r >= R[i])
             r = self.r[c]
