@@ -24,9 +24,9 @@ setup(
     author_email='m.gieles@surrey.ac.uk, a.zocchi@surrey.ac.uk',
     url='https://github.com/mgieles/limepy',
     packages=[
-        'limepy',
+        'limepy'
     ],
-    package_dir={'limepy': 'limepy'},
+    package_dir={'limepy': 'limepy','sample' : 'sample'},
     include_package_data=True,
     install_requires=requirements,
     license="BSD",

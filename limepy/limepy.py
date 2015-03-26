@@ -93,7 +93,7 @@ class limepy:
                     self.converged=False
 
         self.r0 = 1.0
-        if (self.multi): self.r0j = sqrt(self.sig2)*self.r0
+        if (self.multi): self.r0j = sqrt(self.sig2j)*self.r0
 
         self._poisson(self.potonly)
         if (self.multi): self.Mj = self._Mjtot
@@ -128,11 +128,12 @@ class limepy:
 
         self.G = 9.0/(4.0*pi)
         self.mu, self._ah = numpy.array([1.0]), numpy.array([1.0])
-        self.sig2 = numpy.array([1.0])
+        self.sig2 = 1.0
+        self.sig2j = numpy.array([1.0])
         self.niter = 0
 
         self.potonly, self.multi, self.verbose = [False]*3
-        self.ra, self.ramax = 1e6, 1e3
+        self.ra, self.ramax = 1e6, 1e4
 
         self.nstep=1
         self.converged=False
@@ -161,10 +162,10 @@ class limepy:
     def _set_mass_function_variables(self):
         self.mmean = sum(self.mj*self.alpha)
         self.mu = self.mj/self.mmean
-        self.sig2 = self.mu**(-2*self.delta)
+        self.sig2j = self.mu**(-2*self.delta)
         self.raj = self.ra*self.mu**self.eta
 
-        self.W0j = self.W0/self.sig2
+        self.W0j = self.W0/self.sig2j
         self._ah = self.alpha*self._rhohat(self.W0,0,self.ramax)
         self._ah /= self._rhohat(self.W0j,0,self.ramax)
 
@@ -248,7 +249,7 @@ class limepy:
         dphidr = numpy.sum(self.y[1:1+self.nmbin,1:],axis=0)/self.r[1:-1]**2
         self.dp1 = numpy.r_[0, dphidr, -self.G*self.M/self.rt**2]
 
-        self.A = self._ah/(2*pi*self.sig2)**1.5/self.rhoint0
+        self.A = self._ah/(2*pi*self.sig2j)**1.5/self.rhoint0
 
         if (not self.multi):
             self.mc = -numpy.r_[self.y[1,:],self.y[1,-1]]/self.G
@@ -265,7 +266,7 @@ class limepy:
         ih = numpy.searchsorted(self.mc, 0.5*self.mc[-1])-1
         rhotmp=numpy.zeros(2)
         for j in range(self.nmbin):
-            rhotmp += self._ah[j]*self._rhohat(self.phi[ih:ih+2]/self.sig2[j], self.r[ih:ih+2], self.raj[j])
+            rhotmp += self._ah[j]*self._rhohat(self.phi[ih:ih+2]/self.sig2j[j], self.r[ih:ih+2], self.raj[j])
         drdm = 1./(4*pi*self.r[ih:ih+2]**2*rhotmp)
         rmc_and_derivs = numpy.vstack([[self.r[ih:ih+2]],[drdm]]).T
         self.rh = PiecewisePolynomial(self.mc[ih:ih+2], rmc_and_derivs,direction=1)(0.5*self.mc[-1])
@@ -285,10 +286,10 @@ class limepy:
 
             if (self.multi):
                 for j in range(self.nmbin):
-                    phi, ra = self.phi/self.sig2[j], self.raj[j]
+                    phi, ra = self.phi/self.sig2j[j], self.raj[j]
                     rhoj = self._rhohat(phi, self.r, ra)
                     v2j, v2rj, v2tj = self._get_v2(phi, self.r, rhoj, ra)
-                    v2j, v2rj, v2tj = (q*self.sig2[j] for q in [v2j,v2rj,v2tj])
+                    v2j, v2rj, v2tj = (q*self.sig2j[j] for q in [v2j,v2rj,v2tj])
                     betaj = self._beta(self.r, v2rj, v2tj)
 
                     kj = self.y[2+self.nmbin+j,:]
@@ -409,7 +410,7 @@ class limepy:
         if (self.multi):
             derivs = [numpy.sum(y[1:1+self.nmbin])/x**2] if (x>0) else [0]
             for j in range(self.nmbin):
-                phi, ra = y[0]/self.sig2[j], self.raj[j]
+                phi, ra = y[0]/self.sig2j[j], self.raj[j]
                 derivs.append(-9.0*x**2*self._ah[j]*self._rhohat(phi, x, ra))
             dUdx  = 2.0*pi*numpy.sum(derivs[1:1+self.nmbin])*y[0]/9.
         else:
@@ -421,9 +422,9 @@ class limepy:
         if (not potonly): #dK_j/dx
             rhov2j, rhov2rj = [], []
             for j in range(self.nmbin):
-                rv2, rv2r, rv2t = self._rhov2int(y[0]/self.sig2[j], x, self.raj[j])
-                rhov2j.append(self._ah[j]*self.sig2[j]*2*pi*x**2*rv2/self.rhoint0)
-                rhov2rj.append(self._ah[j]*self.sig2[j]*2*pi*x**2*rv2r/self.rhoint0)
+                rv2, rv2r, rv2t = self._rhov2int(y[0]/self.sig2j[j], x, self.raj[j])
+                rhov2j.append(self._ah[j]*self.sig2j[j]*2*pi*x**2*rv2/self.rhoint0)
+                rhov2rj.append(self._ah[j]*self.sig2j[j]*2*pi*x**2*rv2r/self.rhoint0)
 
             for j in range(self.nmbin):
                 derivs.append(rhov2j[j])
@@ -458,6 +459,7 @@ class limepy:
         self.G *= Gstar
         self.rs = Rstar
         self.sig2 *= v2star
+        self.sig2j *= v2star
 
         # Anisotropy radii
         self.ra, self.raj, self.ramax = (q*Rstar for q in [self.ra,self.raj,self.ramax])
@@ -585,7 +587,7 @@ class limepy:
         DF = numpy.zeros([max(r.size, v.size)])
         c = (r<self.rt)&(v2<vesc2)
 
-        E = (phi-0.5*v2)/self.sig2[j]          # Dimensionless positive energy
+        E = (phi-0.5*v2)/self.sig2j[j]          # Dimensionless positive energy
         DF[c] = exp(E[c])
 
         # Float truncation parameter
@@ -593,15 +595,14 @@ class limepy:
 
         if (self.g>0): DF[c] *= gammainc(self.g, E[c])
 
-        if (self.raj[j] < self.ramax):
+        if (self.raj[j] < 20.0*self.rh):
             if (len(arg)==7): J2 = v2*r2 - (x*vx + y*vy + z*vz)**2
             if (len(arg)==4): J2 = sin(theta)**2*v2*r2
 
-            DF[c] *= exp(-J2[c]/(2*self.raj[j]**2*self.sig2[j]))
+            DF[c] *= exp(-J2[c]/(2*self.raj[j]**2*self.sig2j[j]))
 
         DF[c] *= self.A[j]
 
         return DF
-
 
 
