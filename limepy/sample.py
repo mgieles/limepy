@@ -50,7 +50,7 @@ class sample:
 
         if (mod.multi):
             #  N is recalculated in case of multi mass
-            self.Nj = numpy.array(m.Mj/m.mj, dtype='int')
+            self.Nj = numpy.array(mod.Mj/mod.mj, dtype='int')
             self.N = sum(self.Nj)
 
             if min(self.Nj)==0: raise ValueError(" Error: One of the mass components has zero stars!")
@@ -81,6 +81,7 @@ class sample:
                 print " N as computed from Mj/mj = ",self.Nj
 
     def _sample_r(self, m):
+        # Sample radial distances from cumulative mass profile
         if (self.verbose): print " sample r ..."
         ran = random.rand(self.N)
 
@@ -100,6 +101,7 @@ class sample:
 
     def _sample_v(self, m):
         # Sample random values for x = k**1.5
+        if (self.verbose): print " sample v ..."
         self.xmax= self.phihat**1.5
 
         nx = 10
@@ -121,10 +123,10 @@ class sample:
                 self.y = numpy.vstack((self.y, self._pdf_k32(self.r, self.phihat, self.x[i], j)))
             self.y = numpy.vstack((self.y, 0*self.r, self.x[-1]))
 
-            if (self.verbose): print " cdf ..."
+            if (self.verbose): print "   compute cdf ..."
             self._compute_cdf()
 
-            if (self.verbose): print " sample k^3/2 points ..."
+            if (self.verbose): print "   (rejection) sampling of k^3/2 values ..."
             self._sample_k(j)
 
         self.r = self.rfinal

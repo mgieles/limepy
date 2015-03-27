@@ -18,7 +18,7 @@ test_requirements = [
 setup(
     name='limepy',
     version='0.1.0',
-    description='DF based stuff',
+    description='Code to solve lowered isothermal model',
     long_description=readme + '\n\n' + history,
     author='Mark Gieles, Alice Zocchi',
     author_email='m.gieles@surrey.ac.uk, a.zocchi@surrey.ac.uk',
