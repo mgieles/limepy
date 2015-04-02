@@ -133,7 +133,7 @@ class limepy:
         self.niter = 0
 
         self.potonly, self.multi, self.verbose = [False]*3
-        self.ra, self.ramax = 1e6, 1e4
+        self.ra, self.ramax = 1e6, 1e8
 
         self.nstep=1
         self.converged=False
@@ -166,8 +166,8 @@ class limepy:
         self.raj = self.ra*self.mu**self.eta
 
         self.W0j = self.W0/self.sig2j
-        self._ah = self.alpha*self._rhohat(self.W0,0,self.ramax)
-        self._ah /= self._rhohat(self.W0j,0,self.ramax)
+        self._ah = self.alpha*self._rhohat(self.W0, 0, self.ramax)
+        self._ah /= self._rhohat(self.W0j, 0, self.ramax)
 
 
     def _init_multi(self, mj, Mj):
@@ -595,7 +595,7 @@ class limepy:
 
         if (self.g>0): DF[c] *= gammainc(self.g, E[c])
 
-        if (self.raj[j] < 20.0*self.rh):
+        if (self.raj[j] < 10.0*self.rt):
             if (len(arg)==7): J2 = v2*r2 - (x*vx + y*vy + z*vz)**2
             if (len(arg)==4): J2 = sin(theta)**2*v2*r2
 
