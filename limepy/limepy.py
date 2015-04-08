@@ -82,7 +82,7 @@ class limepy:
         """
 
         self._set_kwargs(W0, g, **kwargs)
-        self.rhoint0 = self._rhoint(self.W0, 0, self.ramax)
+        self.rhoint0 = [self._rhoint(self.W0, 0, self.ramax)]
 
         if (self.multi):
             self._init_multi(self.mj, self.Mj)
@@ -127,7 +127,7 @@ class limepy:
         self.nmbin, self.delta, self.eta = 1, 0.5, 0.5
 
         self.G = 9.0/(4.0*pi)
-        self.mu, self._ah = numpy.array([1.0]), numpy.array([1.0])
+        self.mu, self.alpha = numpy.array([1.0]), numpy.array([1.0])
         self.sig2 = 1.0
         self.sig2j = numpy.array([1.0])
         self.niter = 0
@@ -166,8 +166,10 @@ class limepy:
         self.raj = self.ra*self.mu**self.eta
 
         self.W0j = self.W0/self.sig2j
-        self._ah = self.alpha*self._rhohat(self.W0, 0, self.ramax)
-        self._ah /= self._rhohat(self.W0j, 0, self.ramax)
+        self.rhoint0 = numpy.zeros(self.nmbin)
+
+        for j in range(self.nmbin):
+            self.rhoint0[j] = self._rhoint(self.W0j[j], 0, self.ramax)
 
 
     def _init_multi(self, mj, Mj):
@@ -249,7 +251,7 @@ class limepy:
         dphidr = numpy.sum(self.y[1:1+self.nmbin,1:],axis=0)/self.r[1:-1]**2
         self.dp1 = numpy.r_[0, dphidr, -self.G*self.M/self.rt**2]
 
-        self.A = self._ah/(2*pi*self.sig2j)**1.5/self.rhoint0
+        self.A = self.alpha/(2*pi*self.sig2j)**1.5/self.rhoint0
 
         if (not self.multi):
             self.mc = -numpy.r_[self.y[1,:],self.y[1,-1]]/self.G
@@ -266,7 +268,7 @@ class limepy:
         ih = numpy.searchsorted(self.mc, 0.5*self.mc[-1])-1
         rhotmp=numpy.zeros(2)
         for j in range(self.nmbin):
-            rhotmp += self._ah[j]*self._rhohat(self.phi[ih:ih+2]/self.sig2j[j], self.r[ih:ih+2], self.raj[j])
+            rhotmp += self.alpha[j]*self._rhohat(self.phi[ih:ih+2]/self.sig2j[j], self.r[ih:ih+2], self.raj[j])
         drdm = 1./(4*pi*self.r[ih:ih+2]**2*rhotmp)
         rmc_and_derivs = numpy.vstack([[self.r[ih:ih+2]],[drdm]]).T
         self.rh = PiecewisePolynomial(self.mc[ih:ih+2], rmc_and_derivs,direction=1)(0.5*self.mc[-1])
@@ -300,7 +302,7 @@ class limepy:
                     rhj = numpy.interp(0.5*mcj[-1], mcj, self.r)
 
                     if (j==0):
-                        self.rhoj = self._ah[j]*rhoj
+                        self.rhoj = self.alpha[j]*rhoj
                         self.rho = self.rhoj
                         self.v2j, self.v2rj, self.v2tj = v2j, v2rj, v2tj
                         self.v2 = self._Mjtot[j]*v2j/self.M
@@ -313,8 +315,8 @@ class limepy:
                         self.Ktj = self.Kj - self.Krj
                         self.rhj, self.mcj = rhj, mcj
                     else:
-                        self.rhoj = numpy.vstack((self.rhoj, self._ah[j]*rhoj))
-                        self.rho += self._ah[j]*rhoj
+                        self.rhoj = numpy.vstack((self.rhoj, self.alpha[j]*rhoj))
+                        self.rho += self.alpha[j]*rhoj
 
                         self.v2j = numpy.vstack((self.v2j, v2j))
                         self.v2rj = numpy.vstack((self.v2rj, v2rj))
@@ -346,7 +348,7 @@ class limepy:
         for i in range(n):
             if (phi.size==n)&(r.size==n):
                 rho[i] = self._rhoint(phi[i], r[i], ra)/self.rhoint0
-            if (phi.size==n)&(r.size==1): rho[i] = self._rhoint(phi[i], r, ra)/self.rhoint0
+
         return rho
 
     def _rhoint(self, phi, r, ra):
@@ -411,7 +413,8 @@ class limepy:
             derivs = [numpy.sum(y[1:1+self.nmbin])/x**2] if (x>0) else [0]
             for j in range(self.nmbin):
                 phi, ra = y[0]/self.sig2j[j], self.raj[j]
-                derivs.append(-9.0*x**2*self._ah[j]*self._rhohat(phi, x, ra))
+                derivs.append(-9.0*x**2*self.alpha[j]*self._rhoint(phi, x, ra)/self.rhoint0[j])
+
             dUdx  = 2.0*pi*numpy.sum(derivs[1:1+self.nmbin])*y[0]/9.
         else:
             derivs = [y[1]/x**2] if (x>0) else [0]
@@ -423,8 +426,8 @@ class limepy:
             rhov2j, rhov2rj = [], []
             for j in range(self.nmbin):
                 rv2, rv2r, rv2t = self._rhov2int(y[0]/self.sig2j[j], x, self.raj[j])
-                rhov2j.append(self._ah[j]*self.sig2j[j]*2*pi*x**2*rv2/self.rhoint0)
-                rhov2rj.append(self._ah[j]*self.sig2j[j]*2*pi*x**2*rv2r/self.rhoint0)
+                rhov2j.append(self.alpha[j]*self.sig2j[j]*2*pi*x**2*rv2/self.rhoint0[j])
+                rhov2rj.append(self.alpha[j]*self.sig2j[j]*2*pi*x**2*rv2r/self.rhoint0[j])
 
             for j in range(self.nmbin):
                 derivs.append(rhov2j[j])
@@ -442,7 +445,6 @@ class limepy:
         # Generate piecewise 3th order polynomials to connect phi, using phi'
         self._interpolator_set = True
         phi_and_derivs = numpy.vstack([[self.phi],[self.dp1]]).T
-
         self._phi_poly = PiecewisePolynomial(self.r,phi_and_derivs,direction=1)
 
     def _scale(self):
