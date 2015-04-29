@@ -388,7 +388,8 @@ class limepy:
             g3, g5, g7, fp2 = g+1.5, g+2.5, g+3.5, phi*p2
 
             P1 = p2*phi**g5/gamma(g7)
-            H1, H2 = hyp1f1(1, g7, -fp2), hyp1f1(2, g7, -fp2)
+            H1 = hyp1f1(1, g7, -fp2) if fp2 < 700 else g5/fp2 
+            H2 = hyp1f1(2, g7, -fp2) if fp2 < 700 else g5*g3/fp2**2
 
             rhov2r += P1*H1
             rhov2r /= p12
