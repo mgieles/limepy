@@ -217,7 +217,7 @@ class limepy:
         # Ode solving
         max_step = self.maxr if (potonly) else self.max_step
         sol = ode(self._odes)
-        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-8)
+        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-12, rtol=1e-12)
         sol.set_solout(self._logcheck)
         sol.set_f_params(potonly)
         sol.set_initial_value(self.y,0)
@@ -268,7 +268,7 @@ class limepy:
         ih = numpy.searchsorted(self.mc, 0.5*self.mc[-1])-1
         rhotmp=numpy.zeros(2)
         for j in range(self.nmbin):
-            rhotmp += self.alpha[j]*self._rhohat(self.phi[ih:ih+2]/self.sig2j[j], self.r[ih:ih+2], self.raj[j])
+            rhotmp += self.alpha[j]*self._rhohat(self.phi[ih:ih+2]/self.sig2j[j], self.r[ih:ih+2], j)
         drdm = 1./(4*pi*self.r[ih:ih+2]**2*rhotmp)
         rmc_and_derivs = numpy.vstack([[self.r[ih:ih+2]],[drdm]]).T
         self.rh = PiecewisePolynomial(self.mc[ih:ih+2], rmc_and_derivs,direction=1)(0.5*self.mc[-1])
@@ -282,15 +282,15 @@ class limepy:
             self.Kt = self.K - self.Kr
 
             if (not self.multi):
-                self.rho = self._rhohat(self.phi, self.r, self.ra)
+                self.rho = self._rhohat(self.phi, self.r, 0)
                 self.v2, self.v2r, self.v2t = \
-                        self._get_v2(self.phi, self.r, self.rho, self.ra)
+                        self._get_v2(self.phi, self.r, self.rho, 0)
 
             if (self.multi):
                 for j in range(self.nmbin):
-                    phi, ra = self.phi/self.sig2j[j], self.raj[j]
-                    rhoj = self._rhohat(phi, self.r, ra)
-                    v2j, v2rj, v2tj = self._get_v2(phi, self.r, rhoj, ra)
+                    phi = self.phi/self.sig2j[j]
+                    rhoj = self._rhohat(phi, self.r, j)
+                    v2j, v2rj, v2tj = self._get_v2(phi, self.r, rhoj, j)
                     v2j, v2rj, v2tj = (q*self.sig2j[j] for q in [v2j,v2rj,v2tj])
                     betaj = self._beta(self.r, v2rj, v2tj)
 
@@ -337,8 +337,8 @@ class limepy:
             self.beta = self._beta(self.r, self.v2r, self.v2t)
 
 
-    def _rhohat(self, phi, r, ra):
-        """ Wrapper for _rhoint when either phi or r, or both, are arrays """
+    def _rhohat(self, phi, r, j):
+        """ Wrapper for _rhoint when either: both phi or r are arrays, or both are scalar """
         if not hasattr(phi,"__len__"): phi = numpy.array([phi])
         if not hasattr(r,"__len__"): r = numpy.array([r])
 
@@ -346,8 +346,7 @@ class limepy:
         rho = numpy.zeros(n)
 
         for i in range(n):
-            if (phi.size==n)&(r.size==n):
-                rho[i] = self._rhoint(phi[i], r[i], ra)/self.rhoint0
+            rho[i] = self._rhoint(phi[i], r[i], self.raj[j])/self.rhoint0[j]
 
         return rho
 
@@ -361,14 +360,16 @@ class limepy:
             p, g = r/ra, self.g
             p2 = p**2
             g3, g5, fp2 = g+1.5, g+2.5, phi*p2
-            rho += p2*phi**(g+1.5)*hyp1f1(1, g5, -fp2)/gamma(g5)
+
+            func = hyp1f1(1, g5, -fp2) if fp2 < 700 else g3/fp2
+            rho += p2*phi**(g+1.5)*func/gamma(g5)
             rho /= (1+p2)
         return rho
 
-    def _get_v2(self, phi, r, rho, ra):
+    def _get_v2(self, phi, r, rho, j):
         v2, v2r, v2t = numpy.zeros(r.size), numpy.zeros(r.size), numpy.zeros(r.size)
         for i in range(r.size-1):
-            v2[i], v2r[i], v2t[i] = self._rhov2int(phi[i], r[i], ra)/rho[i]/self.rhoint0
+            v2[i], v2r[i], v2t[i] = self._rhov2int(phi[i], r[i], self.raj[j])/rho[i]/self.rhoint0[j]
         return v2, v2r, v2t
 
     def _rhov2int(self, phi, r, ra):
@@ -413,13 +414,14 @@ class limepy:
             derivs = [numpy.sum(y[1:1+self.nmbin])/x**2] if (x>0) else [0]
             for j in range(self.nmbin):
                 phi, ra = y[0]/self.sig2j[j], self.raj[j]
-                derivs.append(-9.0*x**2*self.alpha[j]*self._rhoint(phi, x, ra)/self.rhoint0[j])
+                derivs.append(-9.0*x**2*self.alpha[j]*self._rhohat(phi, x, j))
 
             dUdx  = 2.0*pi*numpy.sum(derivs[1:1+self.nmbin])*y[0]/9.
         else:
             derivs = [y[1]/x**2] if (x>0) else [0]
-            derivs.append(-9.0*x**2*self._rhohat(y[0], x, self.ra))
+            derivs.append(-9.0*x**2*self._rhohat(y[0], x, 0))
             dUdx  = 2.0*pi*derivs[1]*y[0]/9.
+
         derivs.append(dUdx)
 
         if (not potonly): #dK_j/dx
