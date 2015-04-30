@@ -217,7 +217,7 @@ class limepy:
         # Ode solving
         max_step = self.maxr if (potonly) else self.max_step
         sol = ode(self._odes)
-        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-12, rtol=1e-12)
+        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-4,rtol=1e-4)
         sol.set_solout(self._logcheck)
         sol.set_f_params(potonly)
         sol.set_initial_value(self.y,0)
@@ -361,7 +361,7 @@ class limepy:
             p2 = p**2
             g3, g5, fp2 = g+1.5, g+2.5, phi*p2
 
-            func = hyp1f1(1, g5, -fp2) if fp2 < 700 else g3/fp2
+            func = hyp1f1(1, g5, -fp2)  if fp2 < 700 else g3/fp2
             rho += p2*phi**(g+1.5)*func/gamma(g5)
             rho /= (1+p2)
         return rho
@@ -421,6 +421,7 @@ class limepy:
         else:
             derivs = [y[1]/x**2] if (x>0) else [0]
             derivs.append(-9.0*x**2*self._rhohat(y[0], x, 0))
+
             dUdx  = 2.0*pi*derivs[1]*y[0]/9.
 
         derivs.append(dUdx)
