@@ -133,7 +133,7 @@ class limepy:
         self.niter = 0
 
         self.potonly, self.multi, self.verbose = [False]*3
-        self.ra, self.ramax = 1e6, 1e8
+        self.ra, self.ramax = 1e8, 1e8
 
         self.nstep=1
         self.converged=False
@@ -157,7 +157,7 @@ class limepy:
         """ Logs steps and checks for final values """
         if (t>0): self.r, self.y = numpy.r_[self.r, t], numpy.c_[self.y, y]
         self.nstep+=1
-        return 0 if (y[0]>1e-6) else -1
+        return 0 if (y[0]>1e-8) else -1
 
     def _set_mass_function_variables(self):
         self.mmean = sum(self.mj*self.alpha)
@@ -217,7 +217,7 @@ class limepy:
         # Ode solving
         max_step = self.maxr if (potonly) else self.max_step
         sol = ode(self._odes)
-        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-4,rtol=1e-4)
+        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-6,rtol=1e-6)
         sol.set_solout(self._logcheck)
         sol.set_f_params(potonly)
         sol.set_initial_value(self.y,0)
@@ -414,7 +414,7 @@ class limepy:
         if (self.multi):
             derivs = [numpy.sum(y[1:1+self.nmbin])/x**2] if (x>0) else [0]
             for j in range(self.nmbin):
-                phi, ra = y[0]/self.sig2j[j], self.raj[j]
+                phi = y[0]/self.sig2j[j]
                 derivs.append(-9.0*x**2*self.alpha[j]*self._rhohat(phi, x, j))
 
             dUdx  = 2.0*pi*numpy.sum(derivs[1:1+self.nmbin])*y[0]/9.
@@ -566,6 +566,9 @@ class limepy:
         if (len(arg)<2)|(len(arg)==5)|(len(arg)==6)|(len(arg)>7):
             raise ValueError("Error: df needs 2, 3, 4 or 7 arguments")
 
+        if (len(arg)<=3)&(self.ra<self.ramax):
+            raise ValueError("Error: model is anisotropy, more input needed")
+
         if len(arg) == 2:
             r, v = (self._tonp(q) for q in arg)
             j = 0
@@ -601,14 +604,15 @@ class limepy:
 
         if (self.g>0): DF[c] *= gammainc(self.g, E[c])
 
-        if (self.raj[j] < 10.0*self.rt):
-            if (len(arg)==7): J2 = v2*r2 - (x*vx + y*vy + z*vz)**2
-            if (len(arg)==4): J2 = sin(theta)**2*v2*r2
+        if (len(arg)==7): J2 = v2*r2 - (x*vx + y*vy + z*vz)**2
+        if (len(arg)==4): J2 = sin(theta)**2*v2*r2
+        if (len(arg)<=3): J2 = numpy.zeros(len(r))
 
-            DF[c] *= exp(-J2[c]/(2*self.raj[j]**2*self.sig2j[j]))
+        DF[c] *= exp(-J2[c]/(2*self.raj[j]**2*self.sig2j[j]))
 
         DF[c] *= self.A[j]
 
         return DF
+
 
 
