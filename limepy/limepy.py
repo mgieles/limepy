@@ -91,6 +91,7 @@ class limepy:
                 self._set_alpha()
                 if self.niter > 100:
                     self.converged=False
+                    raise ValueError("Error: model did not converge, try larger phi0")
 
         self.r0 = 1.0
         if (self.multi): self.r0j = sqrt(self.sig2j)*self.r0
