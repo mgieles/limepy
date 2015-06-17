@@ -188,7 +188,10 @@ class limepy:
 
     def _set_alpha(self):
         """ Set central rho_j for next iteration """
-        self.alpha *= self.Mj/self._Mjtot
+
+        # This power of 0.5 is different from the GG79 recommendation, but it leads to 
+        # convergens for low phi0 and wide MFs (i.e. with BHs), which fails with an index of 1
+        self.alpha *= (self.Mj/self._Mjtot)**0.5 
         self.alpha/=sum(self.alpha)
 
         self._set_mass_function_variables()
