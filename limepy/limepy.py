@@ -123,7 +123,7 @@ class limepy:
         self.scale = False
         self.maxr = 1e10
         self.max_step = self.maxr
-        self.diffcrit = 1e-10
+        self.diffcrit = 1e-8
 
         self.nmbin, self.delta, self.eta = 1, 0.5, 0.5
 
@@ -200,13 +200,13 @@ class limepy:
         self.niter+=1
         self.nstep=1
         if (self.verbose):
-            Mjin,Mjit="", ""
+            fracd,Mjit="", ""
             for j in range(self.nmbin):
-                Mjin=Mjin+"%12.8f "%(self.Mj[j]/sum(self.Mj))
+                fracd=fracd+"%12.8f "%((self._Mjtot[j]/sum(self._Mjtot) - self.Mj[j]/sum(self.Mj))/(self.Mj[j]/sum(self.Mj)))
                 Mjit=Mjit+"%12.8f "%(self._Mjtot[j]/sum(self._Mjtot))
-            out=(self.niter, self.diff, self.converged, Mjin, Mjit)
+            out=(self.niter, self.diff, self.converged, fracd, Mjit)
 
-            print " Iter %3i; diff = %10.3e; conv = %s; Mj=%s; Mjtot=%s"%out
+            print " Iter %3i; diff = %10.3e; conv = %s; frac diff=%s; Mjtot=%s"%out
 
     def _poisson(self, potonly):
         """ Solves Poisson equation """
