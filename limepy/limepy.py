@@ -17,21 +17,30 @@ class limepy:
 
         (Multi-Mass, Anisotropic) Lowered Isothermal Model Explorer in Python
 
+        This code solves the models presented in Gieles & Zocchi in prep. [GZ], 
+        and calculates radial profiles for some useful quantities. The models 
+        are defined by the distribution function (DF) of equation (1) in GZ
 
-        Parameters:
+        Model parameters:
 
         W0 : scalar
            Central dimensionless potential
         g : scalar
-          Order of truncation [0=Woolley, 1=King, 2=Wilson]; default=1
+          Order of truncation [0=Woolley, 1=King, 2=Wilson]; default=1        
+        ra : scalar, required for anisotropic models
+          Anisotropy radius; default=1e8
         mj : list, required for multi-mass system
           Mean mass of each component; default=None
         Mj : list, required for multi-mass system
            Total mass of each component; default=None
         delta : scalar, optional
-              Index in sig_j = v_0*mu_j**-delta; default=0.5
+              Index in s_j = v_0*mu_j**-delta; default=0.5
+              See equation (20) in GZ
         eta : scalar, optional
               Index in ra_j = ra*mu_j**eta; default=0.5
+              See equation (21) in GZ
+        scale : bool, optional
+           Scale model to desired G=GS, M=MS, R=RS; default=False
         MS : scalar, optional
            Final scaled mass; default=10^5 [Msun]
         RS : scalar, optional
@@ -40,8 +49,7 @@ class limepy:
            Final scaled mass; default=0.004302 [(km/s)^2 pc/Msun]
         scale_radius : str, optional
                      Radius to scale ['rv' or 'rh']; default='rh'
-        scale : bool, optional
-              Scale model to desired G=GS, M=MS, R=RS; default=False
+
         potonly : bool, optional
                 Fast solution by solving potential only; default=False
         max_step : scalar, optional
@@ -221,7 +229,7 @@ class limepy:
         # Ode solving
         max_step = self.maxr if (potonly) else self.max_step
         sol = ode(self._odes)
-        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-6,rtol=1e-6)
+        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-9,rtol=1e-7)
         sol.set_solout(self._logcheck)
         sol.set_f_params(potonly)
         sol.set_initial_value(self.y,0)
@@ -515,31 +523,46 @@ class limepy:
         R = self.r
         Sigma = numpy.zeros(self.nstep)
         v2p = numpy.zeros(self.nstep)
+        v2Rp = numpy.zeros(self.nstep)
+        v2Tp = numpy.zeros(self.nstep)
 
         if (self.multi):
             Sigmaj = numpy.zeros((self.nmbin, self.nstep))
             v2jp = numpy.zeros((self.nmbin, self.nstep))
-             
+            v2jRp = numpy.zeros((self.nmbin, self.nstep))
+            v2jTp = numpy.zeros((self.nmbin, self.nstep))
+
         for i in range(self.nstep-1):
             c = (self.r >= R[i])
             r = self.r[c]
             z = sqrt(abs(r**2 - R[i]**2)) # avoid small neg. values due to round off
 
             Sigma[i] = 2.0*simps(self.rho[c], x=z)
-            betaterm = 1 if i==0 else 1 - self.beta[c]*R[i]**2/self.r[c]**2
-            v2p[i] = abs(2.0*simps(betaterm*self.rho[c]*self.v2r[c], x=z)/Sigma[i])
+            betaterm1 = 1 if i==0 else 1 - self.beta[c]*R[i]**2/self.r[c]**2
+            betaterm2 = 1 if i==0 else 1 - self.beta[c]*(1-R[i]**2/self.r[c]**2)
+            v2p[i] = abs(2.0*simps(betaterm1*self.rho[c]*self.v2r[c], x=z)/Sigma[i])
+            v2Rp[i] = abs(2.0*simps(betaterm2*self.rho[c]*self.v2r[c], x=z)/Sigma[i])
+            v2Tp[i] = abs(2.0*simps(self.rho[c]*self.v2t[c]/2., x=z)/Sigma[i])
 
             if (self.multi):
                 for j in range(self.nmbin):
                     Sigmaj[j,i] = 2.0*simps(self.rhoj[j,c], x=z)
-                    betaterm = 1 if i==0 else 1 - self.betaj[j,c]*R[i]**2/self.r[c]**2
-                    v2jp[j,i] = abs(2.0*simps(betaterm*self.rhoj[j,c]*self.v2rj[j,c], x=z))
-                    v2jp[j,i]/=Sigmaj[j,i]
+                    betaterm1 = 1 if i==0 else 1 - self.betaj[j,c]*R[i]**2/self.r[c]**2
+                    betaterm2 = 1 if i==0 else 1 - self.betaj[j,c]*(1-R[i]**2)/self.r[c]**2
+
+                    v2jp[j,i] = abs(2.0*simps(betaterm1*self.rhoj[j,c]*self.v2rj[j,c], x=z))
+                    v2jp[j,i] /= Sigmaj[j,i]
+
+                    v2jRp[j,i] = abs(2.0*simps(betaterm2*self.rhoj[j,c]*self.v2rj[j,c], x=z))
+                    v2jRp[j,i] /= Sigmaj[j,i]
+
+                    v2jTp[j,i] = abs(2.0*simps(self.rhoj[j,c]*self.v2tj[j,c]/2., x=z))
+                    v2jTp[j,i] /= Sigmaj[j,i]
 
 
         self.R, self.Sigma, self.v2p = R, Sigma, v2p
         if (self.multi):
-            self.Sigmaj, self.v2jp = Sigmaj, v2jp            
+            self.Sigmaj, self.v2jp, self.v2jRp, self.v2jTp = Sigmaj, v2jp, v2jRp, v2jTp 
         return
 
     def interp_phi(self, r):
