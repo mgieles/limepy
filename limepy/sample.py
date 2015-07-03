@@ -87,6 +87,7 @@ class sample:
 
         if not m.multi:
             self.r = numpy.interp(ran, m.mc/m.mc[-1], m.r)
+            self.rmark = self.r
 
         if m.multi:
             self.r = numpy.zeros(self.N)
@@ -175,24 +176,25 @@ class sample:
             c[0:sta] = False
             c[end::] = False
 
-        ycum0 = self.ycum[:,c]
-        rtmp0 = self.r[c]
+        ycum = self.ycum[:,c]
+        rtmp = self.r[c]
 
-        ftmp0 = self.phihat[c]
-        y0 = self.y[:,c]
-        x0 = self.x[:,c]
+        ftmp = self.phihat[c]
+        y = self.y[:,c]
+        x = self.x[:,c]
 
         if self.mod.multi:
             c = numpy.zeros(self.Nj[jbin], dtype='bool')+True
-                    
+
+
         while (sum(c) > 0):
             nc = sum(c)
 
-            ycum = ycum0[:,c]
-            rtmp = rtmp0[c]
-            ftmp = ftmp0[c]
-            y = y0[:,c]
-            x = x0[:,c]
+            ycum = ycum[:,c]
+            rtmp = rtmp[c]
+            ftmp = ftmp[c]
+            y = y[:,c]
+            x = x[:,c]
 
             R = random.rand(nc)*ycum[-1]
             xtmp = numpy.zeros(nc)
@@ -215,7 +217,6 @@ class sample:
             else:
                 xsamp = numpy.r_[xsamp, xtmp[~c]]
                 r = numpy.r_[r, rtmp[~c]]
-
             iter+=1
 
         # Assign final velocities and update r because of shuffling
@@ -235,7 +236,7 @@ class sample:
         R = random.rand(N)
 
         if self.ani:
-            # Anisotropic systems sample angles: cdf(q) = erfi(a*q)/erfi(a), a = k*p^2
+            # Anisotropic systems sample angles: cdf(q) = erfi(a*q)/erfi(a), a = sqrt(k)*p
             p = self.r/self.ra
             a = p*sqrt(self.k)
             if self.mod.multi:

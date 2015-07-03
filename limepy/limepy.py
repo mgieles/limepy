@@ -131,7 +131,7 @@ class limepy:
         self.scale = False
         self.maxr = 1e10
         self.max_step = self.maxr
-        self.diffcrit = 1e-8
+        self.diffcrit = 1e-12
 
         self.nmbin, self.delta, self.eta = 1, 0.5, 0.5
 
@@ -229,7 +229,7 @@ class limepy:
         # Ode solving
         max_step = self.maxr if (potonly) else self.max_step
         sol = ode(self._odes)
-        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-9,rtol=1e-7)
+        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-8,rtol=1e-8)
         sol.set_solout(self._logcheck)
         sol.set_f_params(potonly)
         sol.set_initial_value(self.y,0)
@@ -556,7 +556,7 @@ class limepy:
                     v2jRp[j,i] = abs(2.0*simps(betaterm2*self.rhoj[j,c]*self.v2rj[j,c], x=z))
                     v2jRp[j,i] /= Sigmaj[j,i]
 
-                    v2jTp[j,i] = abs(2.0*simps(self.rhoj[j,c]*self.v2tj[j,c]/2., x=z))
+                    v2jTp[j,i] = abs(simps(self.rhoj[j,c]*self.v2tj[j,c], x=z))
                     v2jTp[j,i] /= Sigmaj[j,i]
 
 
