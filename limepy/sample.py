@@ -64,11 +64,11 @@ class sample:
             self.ra = mod.ra
 
         if mod.multi:
-            self.Nstart = numpy.zeros(mod.nmbin)
-            self.Nend = numpy.zeros(mod.nmbin)
+            self.Nstart = numpy.zeros(mod.nmbin,dtype='int')
+            self.Nend = numpy.zeros(mod.nmbin,dtype='int')
             for j in range(mod.nmbin):
-                self.Nstart[j] = sum(self.Nj[0:j])
-                self.Nend[j] = self.Nstart[j] + self.Nj[j]
+                self.Nstart[j] = int(sum(self.Nj[0:j]))
+                self.Nend[j] = int(self.Nstart[j] + self.Nj[j])
 
             self.m = numpy.zeros(self.N)
             self.ra = numpy.zeros(self.N)

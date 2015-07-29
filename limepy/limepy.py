@@ -94,12 +94,17 @@ class limepy:
 
         if (self.multi):
             self._init_multi(self.mj, self.Mj)
+
             while self.diff > self.diffcrit:
                 self._poisson(True)
-                self._set_alpha()
-                if self.niter > 100:
-                    self.converged=False
-                    raise ValueError("Error: model did not converge, try larger phi0")
+
+                if (not self.converged):
+                    raise ValueError("Error: model did not converge in first iteration, try larger r_a / smaller phi_0")
+                else:
+                    self._set_alpha()
+                    if self.niter > 100:
+                        self.converged=False
+                        raise ValueError("Error: mass function did not converge, try larger phi_0")
 
         self.r0 = 1.0
         if (self.multi): self.r0j = sqrt(self.sig2j)*self.r0
@@ -131,7 +136,7 @@ class limepy:
         self.scale = False
         self.maxr = 1e10
         self.max_step = self.maxr
-        self.diffcrit = 1e-12
+        self.diffcrit = 1e-10
 
         self.nmbin, self.delta, self.eta = 1, 0.5, 0.5
 
@@ -145,7 +150,7 @@ class limepy:
         self.ra, self.ramax = 1e8, 1e8
 
         self.nstep=1
-        self.converged=False
+        self.converged=True
         self._interpolator_set=False
 
         if kwargs is not None:
@@ -229,7 +234,7 @@ class limepy:
         # Ode solving
         max_step = self.maxr if (potonly) else self.max_step
         sol = ode(self._odes)
-        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-8,rtol=1e-8)
+        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,atol=1e-6,rtol=1e-6)
         sol.set_solout(self._logcheck)
         sol.set_f_params(potonly)
         sol.set_initial_value(self.y,0)
@@ -428,6 +433,7 @@ class limepy:
             for j in range(self.nmbin):
                 phi = y[0]/self.sig2j[j]
                 derivs.append(-9.0*x**2*self.alpha[j]*self._rhohat(phi, x, j))
+#                if x<1e-2: print " DERIVS ",j, x, y[0], -9.0*x**2*self.alpha[j], phi, self.rhoint0[j], self._rhohat(phi, x, j)
 
             dUdx  = 2.0*pi*numpy.sum(derivs[1:1+self.nmbin])*y[0]/9.
         else:
@@ -435,9 +441,8 @@ class limepy:
             derivs.append(-9.0*x**2*self._rhohat(y[0], x, 0))
 
             dUdx  = 2.0*pi*derivs[1]*y[0]/9.
-
+        
         derivs.append(dUdx)
-
         if (not potonly): #dK_j/dx
             rhov2j, rhov2rj = [], []
             for j in range(self.nmbin):
@@ -560,7 +565,7 @@ class limepy:
                     v2jTp[j,i] /= Sigmaj[j,i]
 
 
-        self.R, self.Sigma, self.v2p = R, Sigma, v2p
+        self.R, self.Sigma, self.v2p, self.v2Rp, self.v2Tp = R, Sigma, v2p, v2Rp, v2Tp
         if (self.multi):
             self.Sigmaj, self.v2jp, self.v2jRp, self.v2jTp = Sigmaj, v2jp, v2jRp, v2jTp 
         return
@@ -621,7 +626,11 @@ class limepy:
         vesc2 = 2.0*phi                        # Note: phi > 0
 
         DF = numpy.zeros([max(r.size, v.size)])
-        c = (r<self.rt)&(v2<vesc2)
+        if (len(r)>1)&(len(v2)>1):
+            c = (r<self.rt)&(v2<vesc2)
+
+        if (len(r)==1)&(len(v2)>1):
+            c = (v2<vesc2)
 
         E = (phi-0.5*v2)/self.sig2j[j]          # Dimensionless positive energy
         DF[c] = exp(E[c])
@@ -633,7 +642,7 @@ class limepy:
 
         if (len(arg)==7): J2 = v2*r2 - (x*vx + y*vy + z*vz)**2
         if (len(arg)==4): J2 = sin(theta)**2*v2*r2
-        if (len(arg)<=3): J2 = numpy.zeros(len(r))
+        if (len(arg)<=3): J2 = numpy.zeros(len(v2))
 
         DF[c] *= exp(-J2[c]/(2*self.raj[j]**2*self.sig2j[j]))
 
