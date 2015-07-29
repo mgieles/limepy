@@ -102,7 +102,7 @@ class limepy:
                     raise ValueError("Error: model did not converge in first iteration, try larger r_a / smaller phi_0")
                 else:
                     self._set_alpha()
-                    if self.niter > 100:
+                    if self.niter > 200:
                         self.converged=False
                         raise ValueError("Error: mass function did not converge, try larger phi_0")
 
@@ -204,7 +204,7 @@ class limepy:
 
         # This power of 0.5 is different from the GG79 recommendation, but it leads to 
         # convergens for low phi0 and wide MFs (i.e. with BHs), which fails with an index of 1
-        self.alpha *= (self.Mj/self._Mjtot)**0.6
+        self.alpha *= (self.Mj/self._Mjtot)**0.5
         self.alpha/=sum(self.alpha)
 
         self._set_mass_function_variables()
