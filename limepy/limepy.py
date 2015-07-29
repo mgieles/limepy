@@ -136,8 +136,8 @@ class limepy:
         self.scale = False
         self.maxr = 1e10
         self.max_step = self.maxr
-        self.diffcrit = 1e-10
-
+        self.diffcrit = 1e-8
+        self.max_arg_exp = 700
         self.nmbin, self.delta, self.eta = 1, 0.5, 0.5
 
         self.G = 9.0/(4.0*pi)
@@ -204,7 +204,7 @@ class limepy:
 
         # This power of 0.5 is different from the GG79 recommendation, but it leads to 
         # convergens for low phi0 and wide MFs (i.e. with BHs), which fails with an index of 1
-        self.alpha *= (self.Mj/self._Mjtot)**0.5 
+        self.alpha *= (self.Mj/self._Mjtot)**0.6
         self.alpha/=sum(self.alpha)
 
         self._set_mass_function_variables()
@@ -363,7 +363,11 @@ class limepy:
         rho = numpy.zeros(n)
 
         for i in range(n):
-            rho[i] = self._rhoint(phi[i], r[i], self.raj[j])/self.rhoint0[j]
+            if (phi[i]<self.max_arg_exp):
+                rho[i] = self._rhoint(phi[i], r[i], self.raj[j])/self.rhoint0[j]
+            else:
+                rho[i] = exp(phi[i]-self.W0j[j])
+        
 
         return rho
 
@@ -378,7 +382,7 @@ class limepy:
             p2 = p**2
             g3, g5, fp2 = g+1.5, g+2.5, phi*p2
 
-            func = hyp1f1(1, g5, -fp2)  if fp2 < 700 else g3/fp2
+            func = hyp1f1(1, g5, -fp2)  if fp2 < self.max_arg_exp else g3/fp2
             rho += p2*phi**(g+1.5)*func/gamma(g5)
             rho /= (1+p2)
         return rho
@@ -405,8 +409,8 @@ class limepy:
             g3, g5, g7, fp2 = g+1.5, g+2.5, g+3.5, phi*p2
 
             P1 = p2*phi**g5/gamma(g7)
-            H1 = hyp1f1(1, g7, -fp2) if fp2 < 700 else g5/fp2 
-            H2 = hyp1f1(2, g7, -fp2) if fp2 < 700 else g5*g3/fp2**2
+            H1 = hyp1f1(1, g7, -fp2) if fp2 < self.max_arg_exp else g5/fp2 
+            H2 = hyp1f1(2, g7, -fp2) if fp2 < self.max_arg_exp else g5*g3/fp2**2
 
             rhov2r += P1*H1
             rhov2r /= p12
