@@ -366,8 +366,7 @@ class limepy:
             if (phi[i]<self.max_arg_exp) or (numpy.isnan(phi[i])):
                 rho[i] = self._rhoint(phi[i], r[i], self.raj[j])/self.rhoint0[j]
             else:
-                print " phi[i]", phi[i], self.max_arg_exp
-                rho[i] = exp(phi[i]-self.W0j[j])
+                rho[i] = exp(phi[i]-self.W0j[j]) if (self.multi) else 0
         
 
         return rho
