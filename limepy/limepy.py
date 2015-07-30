@@ -660,7 +660,7 @@ class limepy:
             DF[c] *= self.A[j]
 
         else:
-            DF = 0
+	    DF = numpy.zeros(max(len(r),len(v)))
 
         return DF
 
