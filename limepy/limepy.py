@@ -363,9 +363,10 @@ class limepy:
         rho = numpy.zeros(n)
 
         for i in range(n):
-            if (phi[i]<self.max_arg_exp):
+            if (phi[i]<self.max_arg_exp) or (numpy.isnan(phi[i])):
                 rho[i] = self._rhoint(phi[i], r[i], self.raj[j])/self.rhoint0[j]
             else:
+                print " phi[i]", phi[i], self.max_arg_exp
                 rho[i] = exp(phi[i]-self.W0j[j])
         
 
@@ -437,7 +438,6 @@ class limepy:
             for j in range(self.nmbin):
                 phi = y[0]/self.sig2j[j]
                 derivs.append(-9.0*x**2*self.alpha[j]*self._rhohat(phi, x, j))
-#                if x<1e-2: print " DERIVS ",j, x, y[0], -9.0*x**2*self.alpha[j], phi, self.rhoint0[j], self._rhohat(phi, x, j)
 
             dUdx  = 2.0*pi*numpy.sum(derivs[1:1+self.nmbin])*y[0]/9.
         else:
@@ -447,6 +447,7 @@ class limepy:
             dUdx  = 2.0*pi*derivs[1]*y[0]/9.
         
         derivs.append(dUdx)
+
         if (not potonly): #dK_j/dx
             rhov2j, rhov2rj = [], []
             for j in range(self.nmbin):
@@ -630,27 +631,37 @@ class limepy:
         vesc2 = 2.0*phi                        # Note: phi > 0
 
         DF = numpy.zeros([max(r.size, v.size)])
-        if (len(r)>1)&(len(v2)>1):
+
+        if (len(r) == len(v2)):
             c = (r<self.rt)&(v2<vesc2)
 
-        if (len(r)==1)&(len(v2)>1):
+        if (len(r) == 1) and (len(v2) > 1):
             c = (v2<vesc2)
+            if (r>self.rt): c=False
 
-        E = (phi-0.5*v2)/self.sig2j[j]          # Dimensionless positive energy
-        DF[c] = exp(E[c])
+        if (len(r) > 1) and (len(v2) == 1):
+            c = (r<self.rt)&(numpy.zeros(len(r))+v2<vesc2)
+            
 
-        # Float truncation parameter
-        # Following Gomez-Leyton & Velazquez 2014, J. Stat. Mech. 4, 6
+        if (sum(c)>0):
+            E = (phi-0.5*v2)/self.sig2j[j]          # Dimensionless positive energy
+            DF[c] = exp(E[c])
 
-        if (self.g>0): DF[c] *= gammainc(self.g, E[c])
+            # Float truncation parameter
+            # Following Gomez-Leyton & Velazquez 2014, J. Stat. Mech. 4, 6
 
-        if (len(arg)==7): J2 = v2*r2 - (x*vx + y*vy + z*vz)**2
-        if (len(arg)==4): J2 = sin(theta)**2*v2*r2
-        if (len(arg)<=3): J2 = numpy.zeros(len(v2))
+            if (self.g>0): DF[c] *= gammainc(self.g, E[c])
+            
+            if (len(arg)==7): J2 = v2*r2 - (x*vx + y*vy + z*vz)**2
+            if (len(arg)==4): J2 = sin(theta)**2*v2*r2
+            if (len(arg)<=3): J2 = numpy.zeros(len(c)) 
+            
+            DF[c] *= exp(-J2[c]/(2*self.raj[j]**2*self.sig2j[j]))
+            
+            DF[c] *= self.A[j]
 
-        DF[c] *= exp(-J2[c]/(2*self.raj[j]**2*self.sig2j[j]))
-
-        DF[c] *= self.A[j]
+        else:
+            DF = 0
 
         return DF
 
