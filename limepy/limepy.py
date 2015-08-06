@@ -37,7 +37,7 @@ class limepy:
               Index in s_j = v_0*mu_j**-delta; default=0.5
               See equation (20) in GZ
         eta : scalar, optional
-              Index in ra_j = ra*mu_j**eta; default=0.5
+              Index in ra_j = ra*mu_j**eta; default=0
               See equation (21) in GZ
         scale : bool, optional
            Scale model to desired G=GS, M=MS, R=RS; default=False
@@ -138,7 +138,7 @@ class limepy:
         self.max_step = self.maxr
         self.diffcrit = 1e-8
         self.max_arg_exp = 700
-        self.nmbin, self.delta, self.eta = 1, 0.5, 0.5
+        self.nmbin, self.delta, self.eta = 1, 0.5, 0.0
 
         self.G = 9.0/(4.0*pi)
         self.mu, self.alpha = numpy.array([1.0]), numpy.array([1.0])
@@ -194,8 +194,8 @@ class limepy:
         self.nmbin = len(mj)
 
         # Set trial value for alpha_j array, will be updated in iterations
-        self.alpha = self.Mj/sum(self.Mj)
-        self.alpha/=sum(self.alpha)
+        self.alpha = self.Mj/sum(self.Mj) #*self.mj**3
+#        self.alpha/=sum(self.alpha)
         self._set_mass_function_variables()
         self.diff = 1
 
