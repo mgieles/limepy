@@ -4,7 +4,7 @@ import numpy
 from numpy import exp, sqrt, pi, sin, cos
 from scipy.special import gamma, gammainc, dawsn, hyp1f1, erfi
 from scipy import random
-#from scipy.optimize import brentq
+from scipy.optimize import brentq
 from math import factorial
 
 class sample:
