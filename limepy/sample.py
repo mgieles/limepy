@@ -3,11 +3,9 @@ from __future__ import division, absolute_import
 import numpy
 from numpy import exp, sqrt, pi, sin, cos
 from scipy.special import gamma, gammainc, dawsn, hyp1f1, erfi
-from scipy.optimize import brentq
 from scipy import random
+from scipy.optimize import brentq
 from math import factorial
-
-
 
 class sample:
     def __init__(self, mod, **kwargs):
@@ -72,11 +70,11 @@ class sample:
 
             self.m = numpy.zeros(self.N)
             self.ra = numpy.zeros(self.N)
-            self.sig2j = numpy.zeros(self.N)
+            self.s2j = numpy.zeros(self.N)
             for j in range(mod.nmbin):
                 self.m[self.Nstart[j]:self.Nend[j]] = mod.mj[j]
                 self.ra[self.Nstart[j]:self.Nend[j]] = mod.raj[j]
-                self.sig2j[self.Nstart[j]:self.Nend[j]] = mod.sig2j[j]
+                self.s2j[self.Nstart[j]:self.Nend[j]] = mod.s2j[j]
             if (self.verbose): 
                 print " N as computed from Mj/mj = ",self.Nj
 
@@ -97,7 +95,7 @@ class sample:
                 self.r[s:e] = numpy.interp(ran[s:e], m.mcj[j]/m.mcj[j][-1], m.r)
 
         # get dimensionless potential
-        self.phihat = m.interp_phi(self.r)/m.sig2 
+        self.phihat = m.interp_phi(self.r)/m.s2 
         return
 
     def _sample_v(self, m):
@@ -146,7 +144,7 @@ class sample:
         g = self.mod.g
         x13 = x**(1./3)
         x23 = x**(2./3)
-        sig2fac = self.mod.sig2/self.mod.sig2j[j]
+        sig2fac = self.mod.s2/self.mod.s2j[j]
         E = (f-x23)*sig2fac
 
         c = (x>0)
@@ -221,7 +219,7 @@ class sample:
 
         # Assign final velocities and update r because of shuffling
         self.k = numpy.r_[self.k, xsamp**(2./3)] 
-        self.v = numpy.r_[self.v, sqrt(2*xsamp**(2/3)*self.mod.sig2)] 
+        self.v = numpy.r_[self.v, sqrt(2*xsamp**(2/3)*self.mod.s2)] 
         self.rfinal = numpy.r_[self.rfinal, r]
 
     def _pdf_angle(self, q, *args):
@@ -240,7 +238,7 @@ class sample:
             p = self.r/self.ra
             a = p*sqrt(self.k)
             if self.mod.multi:
-                a *= sqrt(self.mod.sig2/self.sig2j)
+                a *= sqrt(self.mod.s2/self.s2j)
             self.q = numpy.zeros(N)
 
             for j in range(N):
@@ -282,7 +280,7 @@ class sample:
     def _summary(self):
         print " done! "
         m = self.mod
-        f = -self.phihat*m.sig2 - m.G*m.M/m.rt 
+        f = -self.phihat*m.s2 - m.G*m.M/m.rt 
 
         print "       U: sample = %12.4e; model = %12.4e"%(0.5*sum(self.m*f), m.U)
         print "       K: sample = %12.4e; model = %12.4e"%(sum(0.5*self.m*self.v**2), m.K)

@@ -291,14 +291,14 @@ class limepy:
 
         # Fill arrays needed if potonly=True
         self.r = numpy.r_[self.r, self.rt]
-        self.phi = numpy.r_[self.y[0,:], 0]
+        self.phihat = numpy.r_[self.y[0,:], 0]
         self._Mjtot = -sol.y[1:1+self.nmbin]/self.G
 
         self.M = sum(self._Mjtot)
 
         # Save the derivative of the potential for the potential interpolater
         dphidr = numpy.sum(self.y[1:1+self.nmbin,1:],axis=0)/self.r[1:-1]**2
-        self.dp1 = numpy.r_[0, dphidr, -self.G*self.M/self.rt**2]
+        self.dphidrhat1 = numpy.r_[0, dphidr, -self.G*self.M/self.rt**2]
 
         self.A = self.alpha/(2*pi*self.s2j)**1.5/self.rhoint0
 
@@ -317,7 +317,7 @@ class limepy:
         ih = numpy.searchsorted(self.mc, 0.5*self.mc[-1])-1
         rhotmp=numpy.zeros(2)
         for j in range(self.nmbin):
-            rhotmp += self.alpha[j]*self._rhohat(self.phi[ih:ih+2]/self.s2j[j], self.r[ih:ih+2], j)
+            rhotmp += self.alpha[j]*self._rhohat(self.phihat[ih:ih+2]/self.s2j[j], self.r[ih:ih+2], j)
         drdm = 1./(4*pi*self.r[ih:ih+2]**2*rhotmp)
         rmc_and_derivs = numpy.vstack([[self.r[ih:ih+2]],[drdm]]).T
         self.rh = PiecewisePolynomial(self.mc[ih:ih+2], rmc_and_derivs,direction=1)(0.5*self.mc[-1])
@@ -333,16 +333,16 @@ class limepy:
 
             # Calculate density and velocity dispersion components
             if (not self.multi):
-                self.rho = self._rhohat(self.phi, self.r, 0)
+                self.rhohat = self._rhohat(self.phihat, self.r, 0)
                 self.v2, self.v2r, self.v2t = \
-                        self._get_v2(self.phi, self.r, self.rho, 0)
+                        self._get_v2(self.phihat, self.r, self.rhohat, 0)
 
             # For multi-mass models, calculate quantities for each mass bin
             if (self.multi):
                 for j in range(self.nmbin):
-                    phi = self.phi/self.s2j[j]
-                    rhoj = self._rhohat(phi, self.r, j)
-                    v2j, v2rj, v2tj = self._get_v2(phi, self.r, rhoj, j)
+                    phi = self.phihat/self.s2j[j]
+                    rhohatj = self._rhohat(phi, self.r, j)
+                    v2j, v2rj, v2tj = self._get_v2(phi, self.r, rhohatj, j)
                     v2j, v2rj, v2tj = (q*self.s2j[j] for q in [v2j,v2rj,v2tj])
                     betaj = self._beta(self.r, v2rj, v2tj)
 
@@ -354,8 +354,8 @@ class limepy:
                     rhj = numpy.interp(0.5*mcj[-1], mcj, self.r)
 
                     if (j==0):
-                        self.rhoj = self.alpha[j]*rhoj
-                        self.rho = self.rhoj
+                        self.rhohatj = self.alpha[j]*rhohatj
+                        self.rhohat = self.rhohatj
                         self.v2j, self.v2rj, self.v2tj = v2j, v2rj, v2tj
                         self.v2 = self._Mjtot[j]*v2j/self.M
                         self.v2r = self._Mjtot[j]*v2rj/self.M
@@ -367,8 +367,8 @@ class limepy:
                         self.Ktj = self.Kj - self.Krj
                         self.rhj, self.mcj = rhj, mcj
                     else:
-                        self.rhoj = numpy.vstack((self.rhoj, self.alpha[j]*rhoj))
-                        self.rho += self.alpha[j]*rhoj
+                        self.rhohatj = numpy.vstack((self.rhohatj, self.alpha[j]*rhohatj))
+                        self.rhohat += self.alpha[j]*rhohatj
 
                         self.v2j = numpy.vstack((self.v2j, v2j))
                         self.v2rj = numpy.vstack((self.v2rj, v2rj))
@@ -396,22 +396,22 @@ class limepy:
         if not hasattr(r,"__len__"): r = numpy.array([r])
 
         n = max([phi.size, r.size])
-        rho = numpy.zeros(n)
+        rhohat = numpy.zeros(n)
 
         for i in range(n):
             if (phi[i]<self.max_arg_exp) or (numpy.isnan(phi[i])):
-                rho[i] = self._rhoint(phi[i], r[i], self.raj[j])/self.rhoint0[j]
+                rhohat[i] = self._rhoint(phi[i], r[i], self.raj[j])/self.rhoint0[j]
             else:
                 # For large phi compute the ratio in one go (see Section 4.1, GZ15)
-                rho[i] = exp(phi[i]-self.phi0j[j]) if (self.multi) else 0
+                rhohat[i] = exp(phi[i]-self.phi0j[j]) if (self.multi) else 0
 
-        return rho
+        return rhohat
 
     def _rhoint(self, phi, r, ra):
         """ Dimensionless density integral as a function of phi and r (scalars only) """
 
         # Isotropic case first (equation 8, GZ15)
-        rho = exp(phi)*gammainc(self.g + 1.5, phi)
+        rhoint = exp(phi)*gammainc(self.g + 1.5, phi)
 
         # For anisotropic models, add r-dependent parts explicitly (equation 11, GZ15)
         if (self.ra < self.ramax) and (phi>0) and (r>0):
@@ -420,9 +420,9 @@ class limepy:
             g3, g5, fp2 = g+1.5, g+2.5, phi*p2
 
             func = hyp1f1(1, g5, -fp2)  if fp2 < self.max_arg_exp else g3/fp2
-            rho += p2*phi**(g+1.5)*func/gamma(g5)
-            rho /= (1+p2)
-        return rho
+            rhoint += p2*phi**(g+1.5)*func/gamma(g5)
+            rhoint /= (1+p2)
+        return rhoint
 
     def _get_v2(self, phi, r, rho, j):
         v2, v2r, v2t = numpy.zeros(r.size), numpy.zeros(r.size), numpy.zeros(r.size)
@@ -514,7 +514,11 @@ class limepy:
         # Generate piecewise 3th order polynomials to connect the discrete values of phi
         # obtained from from Poisson, using phi'
         self._interpolator_set = True
-        phi_and_derivs = numpy.vstack([[self.phi],[self.dp1]]).T
+
+        if (self.scale):
+            phi_and_derivs = numpy.vstack([[self.phi],[self.dphidr1]]).T
+        else:
+            phi_and_derivs = numpy.vstack([[self.phihat],[self.dphidrhat1]]).T
         self._phi_poly = PiecewisePolynomial(self.r,phi_and_derivs,direction=1)
 
     def _scale(self):
@@ -537,12 +541,13 @@ class limepy:
         self.ra, self.raj, self.ramax = (q*Rstar for q in [self.ra,self.raj,self.ramax])
 
         # Scale all variable needed when run with potonly=True
+        self.rhat = self.r*1.0
         self.r, self.r0, self.rt = (q*Rstar for q in [self.r,self.r0,self.rt])
         self.rh, self.rv = (q*Rstar for q in [self.rh,self.rv])
 
         self.M *= Mstar
-        self.phi *= v2star
-        self.dp1 *= v2star/Rstar
+        self.phi = self.phihat * v2star
+        self.dphidr1 = self.dphidrhat1 * v2star/Rstar
         self.mc *= Mstar
         self.U *= Mstar*v2star
         self.A *= Mstar/(v2star**1.5*Rstar**3)
@@ -554,13 +559,13 @@ class limepy:
 
         # Scale density, velocity dispersion components, kinetic energy
         if (not self.potonly):
-            self.rho *= Mstar/Rstar**3
+            self.rho = self.rhohat*Mstar/Rstar**3
             self.v2, self.v2r, self.v2t = (q*v2star for q in [self.v2,
                                                           self.v2r,self.v2t])
             self.K,self.Kr,self.Kt=(q*Mstar*v2star for q in [self.K, self.Kr, self.Kt])
 
             if (self.multi):
-                self.rhoj *= Mstar/Rstar**3
+                self.rhj = self.rhohatj * Mstar/Rstar**3
                 self.mcj *= Mstar
                 self.rhj *= Rstar
                 self.v2j,self.v2rj,self.v2tj=(q*v2star for q in

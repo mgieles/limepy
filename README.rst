@@ -13,7 +13,7 @@ limepy
 
 
 Python environment for solving distribution function (DF) based
-lowered isothermal models as described in (Gieles & Zocchi, 2015, in prep) 
+lowered isothermal models as described in (Gieles & Zocchi 2015, MNRAS) 
 
 * Free software: BSD license
 * Documentation: https://limepy.readthedocs.org.
@@ -22,8 +22,9 @@ Features
 --------
 
 * Solves Poisson's equation used on input parameters
+* Fast solutions for isotropic/anisotropic, single/multi-mass models
 * Normalised DF values
 * Density and velocity moments
-* Projected properties of the models 
-* Initial conditions (TBD)
+* Projected properties 
+* Generate discrete samples
 
