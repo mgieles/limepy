@@ -17,7 +17,7 @@ Velazquez 2014) <http://adsabs.harvard.edu/abs/2014JSMTE..04..006G>`_
 .. math::
    f(\hat{E}) = \displaystyle A\,E_\gamma(g, \hat{E})
 
-where :math:`\displaystyle \hat{E} = (\phi - \phi(r_{\rm t}) - v^2/2)/s^2`, :math:`\phi` is the potential, :math:`r_{\rm t}` is the trunction radius, :math:`s` is a velocity scale and
+where :math:`\displaystyle \hat{E} = (\phi(r_{\rm t}) - \phi - v^2/2)/s^2`, :math:`\phi` is the potential, :math:`r_{\rm t}` is the trunction radius, :math:`s` is a velocity scale and
 
 .. math:: \displaystyle E_\gamma(g, \hat{E}) =
 	  \begin{cases}
