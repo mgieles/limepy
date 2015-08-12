@@ -1,5 +1,5 @@
 ===============================
-limepy
+LIMEPY : Lowered Isothermal Model Explorer in PYthon
 ===============================
 
 .. .. image:: https://badge.fury.io/py/limepy.png
@@ -13,7 +13,7 @@ limepy
 
 
 Python environment for solving distribution function (DF) based
-lowered isothermal models as described in (Gieles & Zocchi 2015, MNRAS) 
+lowered isothermal models as described in Gieles & Zocchi 2015, MNRAS, ArXiv:1508.02120 (http://arxiv.org/abs/1508.02120) 
 
 * Free software: BSD license
 * Documentation: https://limepy.readthedocs.org.
