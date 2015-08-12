@@ -25,7 +25,7 @@ class limepy:
         =================
 
         phi0 : scalar, required
-           Central dimensionless potential
+             Central dimensionless potential
         g : scalar, required
           Order of truncation (0<= g < 3.5; 0=Woolley, 1=King, 2=Wilson) 
 
@@ -59,10 +59,10 @@ class limepy:
         Options: 
         ========
 
-        potonly : bool, optional
-                Fast solution by solving potential only; default=False
         project : bool, optional
                 Compute model properties in projection; default=False
+        potonly : bool, optional
+                Fast solution by solving potential only; default=False
         max_step : scalar, optional
                  Maximum step size for ode output; default=1e10
         verbose : bool, optional
@@ -141,7 +141,7 @@ class limepy:
         >>> print w.A, w.df(0,0)
         >>> [ 0.00800902] [ 1303.40270676]
 
-        Multi-mass model in physical units with r_h = 1 pc and M = 10^5 M_sun
+        Multi-mass model in physical units with r_h = 3 pc and M = 10^5 M_sun
         and print central densities of each bin over the total central density
         and the half-mass radius + half-mass radius in projection
 

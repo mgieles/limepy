@@ -14,7 +14,7 @@ a}/r_{\rm h}`
 >>> a = limepy(7, 1, ra=2)
 >>> print a.ra/a.rh
 
-Create a Wilson model with :math:`\hat{phi}_0 = 12` in Henon/N-body
+Create a Wilson model with :math:`\hat{\phi}_0 = 12` in Henon/N-body
 units: :math:`G=M=r_{\rm v}=1` and print the normalisation
 constant :math:`A` of the DF and the DF in the centre:
 
