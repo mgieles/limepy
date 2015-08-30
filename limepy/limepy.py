@@ -133,7 +133,7 @@ class limepy:
         >>> print a.ra/a.rh, 2*a.Kr/a.Kt
         >>> 1.03377960149 1.36280949941
 
-        Create a Wilson model with W_0 = 12 in Henon/N-body units: G = M =
+        Create a Wilson model with phi0 = 12 in Henon/N-body units: G = M =
         r_v = 1 and print the normalisation constant A of the DF and the
         value of the DF in the centre:
 

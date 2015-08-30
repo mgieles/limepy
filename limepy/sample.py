@@ -4,7 +4,7 @@ import numpy
 from numpy import exp, sqrt, pi, sin, cos
 from scipy.special import gamma, gammainc, dawsn, hyp1f1, erfi
 from scipy import random
-from scipy.optimize import brentq
+from scipy import optimize 
 from math import factorial
 
 class sample:
@@ -242,7 +242,7 @@ class sample:
             self.q = numpy.zeros(N)
 
             for j in range(N):
-                self.q[j] = brentq(self._pdf_angle, 0, 1, args=(a[j], R[j]))
+                self.q[j] = optimize.brentq(self._pdf_angle, 0, 1, args=(a[j], R[j]))
         else:
             # Isotropic: cdf(q) = q
             self.q = R
