@@ -31,8 +31,7 @@ class Mock(MagicMock):
 
 #MOCK_MODULES = ['numpy', 'scipy', 'scipy.integrate', 'scipy.interpolate',
 #                'scipy.special', 'scipy.misc']
-MOCK_MODULES = ['numpy', 'scipy', 'scipy.interpolate', 'scipy.special',
-                    'scipy.integrate', 'scipy.optimize', 'optimize', 'interpolate', 'special']
+MOCK_MODULES = ['numpy', 'scipy']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 sys.path.append(os.path.abspath('../..'))
