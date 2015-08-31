@@ -34,7 +34,9 @@ class Mock(MagicMock):
 MOCK_MODULES = ['numpy', 'scipy', 'scipy.interpolate', 'scipy.special',
                     'scipy.integrate', 'scipy.optimize', 'optimize', 'interpolate', 'special']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-sys.path.insert(os.path.abspath('../..'))
+
+sys.path.append(os.path.abspath('../..'))
+
 print sys.path
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory is
@@ -59,11 +61,11 @@ print " PROJECT_ROOT",project_root
 sys.path.insert(0, project_root)
 #print sys.path
 
-import platform                                                                  
-print 'Version      :', platform.python_version()                                
-print 'Version tuple:', platform.python_version_tuple()                          
-print 'Compiler     :', platform.python_compiler()                               
-print 'Build        :', platform.python_build()  
+import platform
+print 'Version      :', platform.python_version()
+print 'Version tuple:', platform.python_version_tuple()
+print 'Compiler     :', platform.python_compiler()
+print 'Build        :', platform.python_build()
 
 print sys.path
 import limepy
