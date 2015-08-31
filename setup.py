@@ -9,7 +9,7 @@ except ImportError:
 readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
-requirements = ['numpy', 'scipy>=0.13.0']
+requirements = ['numpy', 'scipy>=0.14.0']
 
 test_requirements = [
     # TODO: put package test requirements here
