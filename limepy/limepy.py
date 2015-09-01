@@ -842,14 +842,14 @@ class limepy:
         DF = numpy.zeros([max(r.size, v.size)])
 
         if (len(r) == len(v2)):
-            c = (r<self.rt) & (v2<vesc2)
+            c = (r<self.rt) and (v2<vesc2)
 
         if (len(r) == 1) and (len(v2) > 1):
             c = (v2<vesc2)
             if (r>self.rt): c=False
 
         if (len(r) > 1) and (len(v2) == 1):
-            c = (r<self.rt) & (numpy.zeros(len(r))+v2<vesc2)
+            c = (r<self.rt) and (numpy.zeros(len(r))+v2<vesc2)
 
         if (sum(c)>0):
             # Compute the DF: equation (1), GZ15
