@@ -29,10 +29,8 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return Mock()
 
-#MOCK_MODULES = ['numpy', 'scipy', 'scipy.integrate', 'scipy.interpolate',
-#                'scipy.special', 'scipy.misc']
-MOCK_MODULES = ['numpy', 'scipy', 'scipy.interpolate', 'scipy.special',
-                'scipy.integrate']
+MOCK_MODULES = ['numpy', 'scipy', 'scipy.integrate', 'scipy.interpolate',
+                'scipy.special', 'scipy.misc', 'optimize', 'random']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 print sys.path
 # If extensions (or modules to document with autodoc) are in another
@@ -58,11 +56,11 @@ print " PROJECT_ROOT",project_root
 sys.path.insert(0, project_root)
 #print sys.path
 
-import platform                                                                  
-print 'Version      :', platform.python_version()                                
-print 'Version tuple:', platform.python_version_tuple()                          
-print 'Compiler     :', platform.python_compiler()                               
-print 'Build        :', platform.python_build()  
+import platform
+print 'Version      :', platform.python_version()
+print 'Version tuple:', platform.python_version_tuple()
+print 'Compiler     :', platform.python_compiler()
+print 'Build        :', platform.python_build()
 
 print sys.path
 import limepy
