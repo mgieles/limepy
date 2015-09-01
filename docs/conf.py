@@ -29,13 +29,9 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return Mock()
 
-#MOCK_MODULES = ['numpy', 'scipy', 'scipy.integrate', 'scipy.interpolate',
-#                'scipy.special', 'scipy.misc']
-MOCK_MODULES = ['numpy', 'scipy', 'scipy.optimize', 'optimize.brentq']
+MOCK_MODULES = ['numpy', 'scipy', 'scipy.integrate', 'scipy.interpolate',
+                'scipy.special', 'scipy.misc', 'optimize', 'random']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
-sys.path.append(os.path.abspath('../..'))
-
 print sys.path
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory is
