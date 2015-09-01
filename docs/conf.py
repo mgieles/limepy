@@ -31,6 +31,12 @@ class Mock(MagicMock):
 
 MOCK_MODULES = ['numpy', 'scipy', 'scipy.integrate', 'scipy.interpolate',
                 'scipy.special', 'scipy.misc', 'optimize', 'linalg']
+
+
+tmp = "exp sqrt pi sin PiecewisePolynomial interp1d gamma gammainc dawsn hyp1f1 ode quad simps".split()
+
+MOCK_MODULES += tmp
+
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 print sys.path
 # If extensions (or modules to document with autodoc) are in another
