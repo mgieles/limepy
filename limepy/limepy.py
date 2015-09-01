@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, absolute_import
 import numpy
+import scipy
 from numpy import exp, sqrt, pi, sin
 from scipy.interpolate import PiecewisePolynomial, interp1d
 from scipy.special import gamma, gammainc, dawsn, hyp1f1
@@ -18,7 +19,7 @@ class limepy:
         (Multi-Mass, Anisotropic) Lowered Isothermal Model Explorer in Python
 
         This code solves the models presented in Gieles & Zocchi 2015 (GZ15),
-        and calculates radial profiles for some useful quantities. The models 
+        and calculates radial profiles for some useful quantities. The models
         are defined by the distribution function (DF) of equation (1) in GZ15.
 
         Model parameters:
@@ -27,7 +28,7 @@ class limepy:
         phi0 : scalar, required
              Central dimensionless potential
         g : scalar, required
-          Order of truncation (0<= g < 3.5; 0=Woolley, 1=King, 2=Wilson) 
+          Order of truncation (0<= g < 3.5; 0=Woolley, 1=King, 2=Wilson)
 
         ra : scalar, required for anisotropic models
           Anisotropy radius; default=1e8
@@ -56,7 +57,7 @@ class limepy:
         scale_radius : str, optional
                      Radius to scale ['rv' or 'rh']; default='rh'
 
-        Options: 
+        Options:
         ========
 
         project : bool, optional
@@ -81,7 +82,7 @@ class limepy:
          beta : anisotropy profile (equation 32, GZ15)
          mc : enclosed mass profile
          r0, rh, rv, rt : radii (King, half-mass, virial, truncation)
-         K, Kr, Kt : kinetic energy: total, radial, tangential 
+         K, Kr, Kt : kinetic energy: total, radial, tangential
          U, Q : potential energy, virial ratio
          A : constant in DF (equation 1, GZ15)
          volume : phase-space volume occupied by model
@@ -102,12 +103,12 @@ class limepy:
          rhohatj : dimensionless density
          rhoj : density profile
          v2j : mean-square velocity profile
-         v2rj, v2tj : radial and tangential component of mean-square velocity 
+         v2rj, v2tj : radial and tangential component of mean-square velocity
                     profile
          r0j, raj : radii (King, anisotropy)
-         Kj : kinetic energy 
+         Kj : kinetic energy
          Krj, Ktj : radial/tangential component of kinetic energy
-        
+
         Projected multi-mass models:
         ---------------------------
          Properties of each component:
@@ -126,8 +127,8 @@ class limepy:
         >>> 19.1293426415 1.17783663028
 
         Construct a Michie-King model and print ratio of anisotropy radius over
-        half-mass radius and the Polyachenko & Shukhman (1981) anisotropy 
-        parameter 
+        half-mass radius and the Polyachenko & Shukhman (1981) anisotropy
+        parameter
 
         >>> a = limepy(7, 1, ra=5)
         >>> print a.ra/a.rh, 2*a.Kr/a.Kt
@@ -188,7 +189,7 @@ class limepy:
         # Optional computation of model properties in projection
         if (self.project): self._project()
 
-        # Optional output 
+        # Optional output
         if (self.verbose):
             print "\n Model properties: "
             print " ----------------- "
@@ -266,10 +267,10 @@ class limepy:
         return 0 if (y[0]>self.minimum_phi) else -1
 
     def _set_mass_function_variables(self):
-        """ Multi-mass models: Set properties for each mass bin """ 
-                
+        """ Multi-mass models: Set properties for each mass bin """
+
         self.mmean = sum(self.mj*self.alpha)    # equation (26) GZ15
-        self.mu = self.mj/self.mmean            
+        self.mu = self.mj/self.mmean
         self.s2j = self.mu**(-2*self.delta)     # equation (24) GZ15
         self.raj = self.ra*self.mu**self.eta    # equation (25) GZ15
 
@@ -281,9 +282,9 @@ class limepy:
 
 
     def _init_multi(self, mj, Mj):
-        """ 
-        Initialise parameters and arrays for multi-mass system 
-        (Section 2.2 in GZ15) 
+        """
+        Initialise parameters and arrays for multi-mass system
+        (Section 2.2 in GZ15)
         """
 
         self.multi=True
@@ -292,19 +293,19 @@ class limepy:
         self.nmbin = len(mj)
 
         # Set trial value for alpha_j array, will be updated in iterations
-        self.alpha = self.Mj/sum(self.Mj) 
+        self.alpha = self.Mj/sum(self.Mj)
         self._set_mass_function_variables()
         self.diff = 1
 
     def _set_alpha(self):
         """ Set central rho_j for next iteration """
 
-        # The power of mf_iter_index < 1 is used. This is different from the 
+        # The power of mf_iter_index < 1 is used. This is different from the
         # recommendation of Da Costa & Freeman 1976 and Gunn & Griffin 1979:
-        # mf_iter_index = 1, a smaller value leads to better convergens for 
-        # low phi0 and wide MFs (i.e. when black-holes are considered), which 
+        # mf_iter_index = 1, a smaller value leads to better convergens for
+        # low phi0 and wide MFs (i.e. when black-holes are considered), which
         # can fail with an index of 1 (see Section 2.2, GZ15)
-        
+
         self.alpha *= (self.Mj/self._Mjtot)**self.mf_iter_index
         self.alpha/=sum(self.alpha)
 
@@ -335,7 +336,7 @@ class limepy:
         if (not potonly): self._y = numpy.r_[self._y,numpy.zeros(2*self.nmbin)]
         self._y = numpy.r_[self._y, 0]
 
-        # Ode solving using Runge-Kutta integator of order 4(5) 'dopri5' 
+        # Ode solving using Runge-Kutta integator of order 4(5) 'dopri5'
         # (Hairor, Norsett& Wanner 1993)
         max_step = self.maxr if (potonly) else self.max_step
         sol = ode(self._odes)
@@ -346,7 +347,7 @@ class limepy:
         sol.set_initial_value(self._y,0)
         sol.integrate(self.maxr)
 
-        # Extrapolate to r_t: 
+        # Extrapolate to r_t:
         # phi(r) =~ a(r_t -r)
         # a = GM/r_t^2
         GM = -self.G*sum(sol.y[1:1+self.nmbin])
@@ -365,7 +366,7 @@ class limepy:
             self.converged=False
 
         # Calculate the phase space volume occupied by the model
-        dvol = (4./3*pi)**2*(self.rt**3-self.r[-1]**3)*0.5   
+        dvol = (4./3*pi)**2*(self.rt**3-self.r[-1]**3)*0.5
         dvol *= (2*self._y[0,-1])**1.5
         self.volume = self._y[-1][-1]+dvol
 
@@ -398,8 +399,8 @@ class limepy:
 
         # Get half-mass radius from cubic interpolation, because the half-mass
         # radius can be used as a scale length, this needs to be done
-        # accurately, a linear interpolation does not suffice. Because the 
-        # density array is not known yet at this point, we need a temporary 
+        # accurately, a linear interpolation does not suffice. Because the
+        # density array is not known yet at this point, we need a temporary
         # evaluation of density in the vicinity of r_h
         ih = numpy.searchsorted(self.mc, 0.5*self.mc[-1])-1
         rhotmp=numpy.zeros(2)
@@ -477,7 +478,7 @@ class limepy:
                         self.Ktj = numpy.r_[self.Ktj, ktj[-1]]
                         self.rhj = numpy.r_[self.rhj,rhj]
                         self.mcj = numpy.vstack((self.mcj, mcj))
-                        
+
                 self.rho = self.rhohat*1.0
                 self.rhoj = self.rhohatj*1.0
 
@@ -486,9 +487,9 @@ class limepy:
 
 
     def _rhohat(self, phi, r, j):
-        """ 
-        Wrapper for _rhoint when either: both phi or r are arrays, or both 
-        are scalar 
+        """
+        Wrapper for _rhoint when either: both phi or r are arrays, or both
+        are scalar
         """
         if not hasattr(phi,"__len__"): phi = numpy.array([phi])
         if not hasattr(r,"__len__"): r = numpy.array([r])
@@ -507,7 +508,7 @@ class limepy:
         return rhohat
 
     def _rhoint(self, phi, r, ra):
-        """ 
+        """
         Dimensionless density integral as a function of phi and r (scalar)
         """
 
@@ -553,7 +554,7 @@ class limepy:
             g3, g5, g7, fp2 = g+1.5, g+2.5, g+3.5, phi*p2
 
             P1 = p2*phi**g5/gamma(g7)
-            H1 = hyp1f1(1, g7, -fp2) if fp2 <self.max_arg_exp else g5/fp2 
+            H1 = hyp1f1(1, g7, -fp2) if fp2 <self.max_arg_exp else g5/fp2
             H2 = hyp1f1(2, g7, -fp2) if fp2 <self.max_arg_exp else g5*g3/fp2**2
 
             rhov2r += P1*H1
@@ -591,14 +592,14 @@ class limepy:
             derivs.append(-9.0*x**2*self._rhohat(y[0], x, 0))
 
             dUdx  = 2.0*pi*derivs[1]*y[0]/9.
-        
+
         derivs.append(dUdx)
 
         # Calculate pressure tensor components for all the mass bins
         if (not potonly): #dK_j/dx
             rhov2j, rhov2rj = [], []
             for j in range(self.nmbin):
-                rv2, rv2r, rv2t = self._rhov2int(y[0]/self.s2j[j], 
+                rv2, rv2r, rv2t = self._rhov2int(y[0]/self.s2j[j],
                                                  x, self.raj[j])
                 P = self.alpha[j]*self.s2j[j]*2*pi*x**2*rv2/self.rhoint0[j]
                 rhov2j.append(P)
@@ -620,7 +621,7 @@ class limepy:
     def _setup_phi_interpolator(self):
         """ Setup interpolater for phi, works on scalar and arrays """
 
-        # Generate piecewise 3th order polynomials to connect the discrete 
+        # Generate piecewise 3th order polynomials to connect the discrete
         # values of phi obtained from from Poisson, using dphi/dr
         self._interpolator_set = True
 
@@ -647,12 +648,12 @@ class limepy:
         self.s2j *= v2star
 
         # Anisotropy radii
-        self.ra, self.raj, self.ramax = (q*Rstar for q in [self.ra, 
+        self.ra, self.raj, self.ramax = (q*Rstar for q in [self.ra,
                                                            self.raj,
                                                            self.ramax])
 
         # Scale all variable needed when run with potonly=True
-        self.r, self.r0, self.rt = (q*Rstar for q in [self.rhat, 
+        self.r, self.r0, self.rt = (q*Rstar for q in [self.rhat,
                                                       self.r0, self.rt])
         self.rh, self.rv = (q*Rstar for q in [self.rh,self.rv])
 
@@ -673,7 +674,7 @@ class limepy:
             self.rho = self.rhohat*Mstar/Rstar**3
             self.v2, self.v2r, self.v2t = (q*v2star for q in [self.v2,
                                                           self.v2r,self.v2t])
-            self.K,self.Kr,self.Kt=(q*Mstar*v2star for q in [self.K, self.Kr, 
+            self.K,self.Kr,self.Kt=(q*Mstar*v2star for q in [self.K, self.Kr,
                                                              self.Kt])
 
             if (self.multi):
@@ -689,20 +690,20 @@ class limepy:
                 self.Krj *= Mstar*v2star
                 self.Ktj *= Mstar*v2star
                 self.Kj *= Mstar*v2star
-                
+
     def _tonp(self, q):
         q = numpy.array([q]) if not hasattr(q,"__len__") else numpy.array(q)
         return q
 
     def _project(self):
-        """ 
+        """
         Compute projected mass density (Sigma) and projected <v2> profiles
         """
 
         # Initialise the projected quantities:
-        # R is the projected (2d) distance from the center, Sigma is the 
-        # projected density, v2z is the line-of-sight velocity dispersion, 
-        # v2R and v2T are the radial and tangential velocity dispersion 
+        # R is the projected (2d) distance from the center, Sigma is the
+        # projected density, v2z is the line-of-sight velocity dispersion,
+        # v2R and v2T are the radial and tangential velocity dispersion
         # components projected on the plane of the sky
 
         # Initialise some arrays
@@ -752,10 +753,10 @@ class limepy:
                     if (i==0):
                         betaterm1 = 1
                         betaterm2 = 1
-                    else: 
+                    else:
                         betaterm1 = 1-self.betaj[j,c]*R[i]**2/self.r[c]**2
                         betaterm2 = 1-self.betaj[j,c]*(1-R[i]**2)/self.r[c]**2
-                    
+
                     v2int = simps(betaterm1*self.rhoj[j,c]*self.v2rj[j,c], x=z)
                     v2zj[j,i] = abs(2.0*v2int)
                     v2zj[j,i] /= Sigmaj[j,i]
@@ -792,7 +793,7 @@ class limepy:
 
     def df(self, *arg):
         """
-        Returns the value of the normalised DF at a given position in phase 
+        Returns the value of the normalised DF at a given position in phase
         space, can only be called after solving Poisson's equation
 
         Arguments can be:
@@ -833,7 +834,7 @@ class limepy:
             v2 = vx**2 + vy**2 + vz**2
             r, v = sqrt(r2), sqrt(v2)
 
-        # Interpolate potential and calculate escape velocity as a 
+        # Interpolate potential and calculate escape velocity as a
         # function of the distance from the center
         phi = self.interp_phi(r)
         vesc2 = 2.0*phi                  # Note: phi > 0
@@ -849,7 +850,7 @@ class limepy:
 
         if (len(r) > 1) and (len(v2) == 1):
             c = (r<self.rt) and (numpy.zeros(len(r))+v2<vesc2)
-            
+
 
         if (sum(c)>0):
             # Compute the DF: equation (1), GZ15
@@ -858,13 +859,13 @@ class limepy:
             DF[c] = exp(E[c])
 
             if (self.g>0): DF[c] *= gammainc(self.g, E[c])
-            
+
             if (len(arg)==7): J2 = v2*r2 - (x*vx + y*vy + z*vz)**2
             if (len(arg)==4): J2 = sin(theta)**2*v2*r2
-            if (len(arg)<=3): J2 = numpy.zeros(len(c)) 
-            
+            if (len(arg)<=3): J2 = numpy.zeros(len(c))
+
             DF[c] *= exp(-J2[c]/(2*self.raj[j]**2*self.s2j[j]))
-            
+
             DF[c] *= self.A[j]
 
         else:
