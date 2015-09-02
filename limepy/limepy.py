@@ -776,7 +776,7 @@ class limepy:
 
         if (self.multi):
             self.Sigmaj = Sigmaj
-            self.v2zj, self.v2RjR, self.v2Tj =  v2zj, v2Rj, v2Tj
+            self.v2zj, self.v2Rj, self.v2Tj =  v2zj, v2Rj, v2Tj
         return
 
     def interp_phi(self, r):
