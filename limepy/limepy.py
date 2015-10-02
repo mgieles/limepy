@@ -3,9 +3,9 @@ from __future__ import division, absolute_import
 import numpy
 import scipy
 from numpy import exp, sqrt, pi, sin
-from scipy.interpolate import PiecewisePolynomial, interp1d
-from scipy.special import gamma, gammainc, dawsn, hyp1f1
-from scipy.integrate import ode, quad, simps
+from scipy.interpolate import PiecewisePolynomial
+from scipy.special import gamma, gammainc, hyp1f1
+from scipy.integrate import ode, simps
 from math import factorial
 
 #     Authors: Mark Gieles, Alice Zocchi (Surrey 2015)
@@ -92,7 +92,7 @@ class limepy:
         Projected models:
         -----------------
          Sigma : surface (mass) density
-         v2z : line-of-sight mean-square velocity
+         v2p : line-of-sight mean-square velocity
          v2R, v2T : radial and tangential component of mean-square velocity
                   on plane of the sky
 
@@ -113,7 +113,7 @@ class limepy:
         ---------------------------
          Properties of each component:
          Sigmaj : surface (mass) density
-         v2zj : line-of-sight mean-square velocity profile
+         v2pj : line-of-sight mean-square velocity profile
          v2Rj, v2Tj : radial and tangential component on the plane of the sky
                     of the mean-square velocity profile
 
@@ -173,7 +173,7 @@ class limepy:
                     if self.niter > self.max_mf_iter:
                         self.converged=False
                         error = "Error: mass function did not converge, "
-                        errpr += " try larger phi_0"
+                        error += " try larger phi_0"
                         raise ValueError(error)
 
         self.r0 = 1.0
@@ -702,21 +702,21 @@ class limepy:
 
         # Initialise the projected quantities:
         # R is the projected (2d) distance from the center, Sigma is the
-        # projected density, v2z is the line-of-sight velocity dispersion,
+        # projected density, v2p is the line-of-sight velocity dispersion,
         # v2R and v2T are the radial and tangential velocity dispersion
         # components projected on the plane of the sky
 
         # Initialise some arrays
         R = self.r
         Sigma = numpy.zeros(self.nstep)
-        v2z = numpy.zeros(self.nstep)
+        v2p = numpy.zeros(self.nstep)
         v2R = numpy.zeros(self.nstep)
         v2T = numpy.zeros(self.nstep)
         mcp = numpy.zeros(self.nstep)
 
         if (self.multi):
             Sigmaj = numpy.zeros((self.nmbin, self.nstep))
-            v2zj = numpy.zeros((self.nmbin, self.nstep))
+            v2pj = numpy.zeros((self.nmbin, self.nstep))
             v2Rj = numpy.zeros((self.nmbin, self.nstep))
             v2Tj = numpy.zeros((self.nmbin, self.nstep))
             mcpj = numpy.zeros((self.nmbin, self.nstep)) # TBD
@@ -730,8 +730,8 @@ class limepy:
             Sigma[i] = 2.0*simps(self.rho[c], x=z)
             betaterm1 = 1 if i==0 else 1-self.beta[c]*R[i]**2/self.r[c]**2
             betaterm2 = 1 if i==0 else 1-self.beta[c]*(1-R[i]**2/self.r[c]**2)
-            v2z[i] = abs(2.0*simps(betaterm1*self.rho[c]*self.v2r[c], x=z))
-            v2z[i] /= Sigma[i]
+            v2p[i] = abs(2.0*simps(betaterm1*self.rho[c]*self.v2r[c], x=z))
+            v2p[i] /= Sigma[i]
 
             v2R[i] = abs(2.0*simps(betaterm2*self.rho[c]*self.v2r[c], x=z))
             v2R[i] /= Sigma[i]
@@ -758,8 +758,8 @@ class limepy:
                         betaterm2 = 1-self.betaj[j,c]*(1-R[i]**2)/self.r[c]**2
 
                     v2int = simps(betaterm1*self.rhoj[j,c]*self.v2rj[j,c], x=z)
-                    v2zj[j,i] = abs(2.0*v2int)
-                    v2zj[j,i] /= Sigmaj[j,i]
+                    v2pj[j,i] = abs(2.0*v2int)
+                    v2pj[j,i] /= Sigmaj[j,i]
 
                     v2int = simps(betaterm2*self.rhoj[j,c]*self.v2rj[j,c], x=z)
                     v2Rj[j,i] = abs(2.0*v2int)
@@ -769,14 +769,14 @@ class limepy:
                     v2Tj[j,i] /= Sigmaj[j,i]
 
         self.R, self.Sigma = R, Sigma
-        self.v2z, self.v2R, self.v2T = v2z, v2R, v2T
+        self.v2p, self.v2R, self.v2T = v2p, v2R, v2T
         self.mcp = mcp
 
         # Compute half-mass radii in projection
 
         if (self.multi):
             self.Sigmaj = Sigmaj
-            self.v2zj, self.v2Rj, self.v2Tj =  v2zj, v2Rj, v2Tj
+            self.v2pj, self.v2Rj, self.v2Tj =  v2pj, v2Rj, v2Tj
         return
 
     def interp_phi(self, r):

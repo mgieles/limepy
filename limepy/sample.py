@@ -3,7 +3,7 @@ from __future__ import division, absolute_import
 import numpy
 import scipy
 from numpy import exp, sqrt, pi, sin, cos
-from scipy.special import gamma, gammainc, dawsn, hyp1f1, erfi
+from scipy.special import  gammainc, dawsn, erfi
 from scipy import random
 from scipy import optimize
 from math import factorial
