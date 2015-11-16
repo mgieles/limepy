@@ -727,7 +727,7 @@ class limepy:
             r = self.r[c]
             z = sqrt(abs(r**2 - R[i]**2)) # avoid small neg. values
 
-            Sigma[i] = 2.0*simps(self.rho[c], x=z)
+            Sigma[i] = 2.0*abs(simps(self.rho[c], x=z))
             betaterm1 = 1 if i==0 else 1-self.beta[c]*R[i]**2/self.r[c]**2
             betaterm2 = 1 if i==0 else 1-self.beta[c]*(1-R[i]**2/self.r[c]**2)
             v2p[i] = abs(2.0*simps(betaterm1*self.rho[c]*self.v2r[c], x=z))
