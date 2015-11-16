@@ -256,7 +256,10 @@ class limepy:
                ('Mj' not in kwargs and 'mj' in kwargs):
                 raise ValueError("Error: Supply both mj and Mj")
         self.raj = numpy.array([self.ra])
-
+        
+        if self.potonly and self.project:
+            raise ValueError('Error: You must not use potonly option when projection is required')
+        
         return
 
     def _logcheck(self, t, y):
