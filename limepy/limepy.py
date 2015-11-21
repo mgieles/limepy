@@ -46,16 +46,12 @@ class limepy:
         Input for scaling:
         ==================
 
-        scale : bool, optional
-           Scale model to desired G=GS, M=MS, R=RS; default=False
-        MS : scalar, optional
-           Final scaled mass; default=10^5 [Msun]
-        RS : scalar, optional
-           Final scaled radius, half-mass or virial (see below); default=3 [pc]
-        GS : scalar, optional
+        G : scalar, optional
            Final scaled gravitationsl const; default=0.004302 [(km/s)^2 pc/Msun]
-        scale_radius : str, optional
-                     Radius to scale ['rv' or 'rh']; default='rh'
+        M : scalar, optional
+           Final scaled mass; default=10^5 
+        r0, rh, rv, rt : scalar, optional
+                        Final scaled radius; default=rh=3 
 
         Options:
         ========
@@ -217,7 +213,7 @@ class limepy:
 
         self.phi0, self.g = phi0, g
 
-        self.MS, self.RS, self.GS = 1e5, 3, 0.004302
+        self._MS, self._RS, self._GS = 1e5, 3, 0.004302
         self.scale_radius = 'rh'
         self.scale = False
         self.project = False
@@ -247,7 +243,21 @@ class limepy:
 
         if kwargs is not None:
             for key, value in kwargs.iteritems():
-                setattr(self, key, value)
+                if key is 'G':
+                    self._GS, self.scale = value, True
+                if key is 'M':
+                    self._MS, self.scale = value, True
+                if key is 'r0':
+                    self._RS, self.scale_radius, self.scale = value,'r0', True
+                if key is 'rh':
+                    self._RS, self.scale_radius, self.scale = value,'rh', True
+                if key is 'rv':
+                    self._RS, self.scale_radius, self.scale = value,'rv', True
+                if key is 'rt':
+                    self._RS, self.scale_radius, self.scale = value,'rt', True
+                else:
+                    setattr(self, key, value)
+
             if 'mj' in kwargs and 'Mj' in kwargs:
                 self.multi=True
                 if len(self.Mj) is not len(self.mj):
@@ -637,10 +647,12 @@ class limepy:
     def _scale(self):
         """ Scales the model to the units set in the input: GS, MS, RS """
 
-        Mstar = self.MS/self.M
-        Gstar = self.GS/self.G
-        if (self.scale_radius=='rh'): Rstar = self.RS/self.rh
-        if (self.scale_radius=='rv'): Rstar = self.RS/self.rv
+        Mstar = self._MS/self.M
+        Gstar = self._GS/self.G
+        if (self.scale_radius=='r0'): Rstar = self._RS/self.r0
+        if (self.scale_radius=='rh'): Rstar = self._RS/self.rh
+        if (self.scale_radius=='rv'): Rstar = self._RS/self.rv
+        if (self.scale_radius=='rt'): Rstar = self._RS/self.rt
         v2star =  Gstar*Mstar/Rstar
 
         # Update the scales that define the system (see Section 2.1.2 of GZ15)
