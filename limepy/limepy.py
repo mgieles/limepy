@@ -134,7 +134,7 @@ class limepy:
         r_v = 1 and print the normalisation constant A of the DF and the
         value of the DF in the centre:
 
-        >>> w = limepy(12, 2, scale=True, GS=1, MS=1, RS=1, scale_radius='rv')
+        >>> w = limepy(12, 2, G=1, M=1, rv=1)
         >>> print w.A, w.df(0,0)
         >>> [ 0.00800902] [ 1303.40270676]
 
