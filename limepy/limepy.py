@@ -918,5 +918,4 @@ class limepy:
         return DF
 
 
-k=limepy(7,1,G=1,M=1,verbose=True)
-print k.K
+
