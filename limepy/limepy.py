@@ -73,7 +73,7 @@ class limepy:
         All models:
         -----------
          rhat, phihat, rhohat : radius, potential and density in model units
-         r, phi, rho : as above, in scaled units (if scale=True)
+         r, phi, rho : as above, in scaled units 
          v2, v2r, v2t : total, radial and tangential mean-square velocity
          beta : anisotropy profile (equation 32, GZ15)
          mc : enclosed mass profile
@@ -212,9 +212,8 @@ class limepy:
         if (g>=3.5): raise ValueError("Error: for g>=3.5 models are infinite")
 
         self.phi0, self.g = phi0, g
-
-        self._MS, self._RS, self._GS = 1e5, 3, 0.004302
-#        self.scale_radius = 'rh'
+        self._MS, self._RS, self._GS = None, None, None
+        self.scale_radius = None
         self.scale = False
         self.project = False
         self.maxr = 1e10
@@ -243,20 +242,52 @@ class limepy:
 
         if kwargs is not None:
             for key, value in kwargs.iteritems():
+                # Check for scaling input
                 if key is 'G':
                     self._GS, self.scale = value, True
                 elif key is 'M':
                     self._MS, self.scale = value, True
                 elif key is 'r0':
-                    self._RS, self.scale_radius, self.scale = value,'r0', True
+                    if self.scale_radius is None:
+                        self._RS, self.scale_radius, self.scale = value,'r0', True
+                    else:
+                        error="Can not set scale radius to r0, already set to %s"
+                        raise ValueError(error%self.scale_radius)
                 elif key is 'rh':
-                    self._RS, self.scale_radius, self.scale = value,'rh', True
+                    if self.scale_radius is None:
+                        self._RS, self.scale_radius, self.scale = value,'rh', True
+                    else:
+                        error="Can not set scale radius to rh, already set to %s"
+                        raise ValueError(error%self.scale_radius)
                 elif key is 'rv':
-                    self._RS, self.scale_radius, self.scale = value,'rv', True
+                    if self.scale_radius is None:
+                        self._RS, self.scale_radius, self.scale = value,'rv', True
+                    else:
+                        error="Can not set scale radius to rv, already set to %s"
+                        raise ValueError(error%self.scale_radius)
                 elif key is 'rt':
-                    self._RS, self.scale_radius, self.scale = value,'rt', True
+                    if self.scale_radius is None:
+                        self._RS, self.scale_radius, self.scale = value,'rt', True
+                    else:
+                        error="Can not set scale radius to rt, already set to %s"
+                        raise ValueError(error%self.scale_radius)
                 else:
+                    # Set input parameters
                     setattr(self, key, value)
+
+            if (self.scale):
+                if self._MS is None:
+                    self._MS = 1e5
+                    if (self.verbose): print " No mass-scale provided, set to default M = 1e5"
+                if self._RS is None:
+                    self._RS, self.scale_radius = 3, 'rh'
+                    if (self.verbose): print " No radius-scale provided, set to default rh = 3"
+                if self._GS is None:
+                    self._GS = 0.004302
+                    if (self.verbose): print " No G provided, set to default: G = 0.004302"
+                if (self.verbose): 
+                    vars=(self._GS, self._MS, self.scale_radius, self._RS)
+                    print " Model scaled to: G = %s, M = %s, %s = %s"%vars
 
             if 'mj' in kwargs and 'Mj' in kwargs:
                 self.multi=True
@@ -887,3 +918,5 @@ class limepy:
         return DF
 
 
+k=limepy(7,1,G=1,M=1,verbose=True)
+print k.K
