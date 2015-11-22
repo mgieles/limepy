@@ -31,27 +31,27 @@ class limepy:
           Order of truncation (0<= g < 3.5; 0=Woolley, 1=King, 2=Wilson)
 
         ra : scalar, required for anisotropic models
-          Anisotropy radius; default=1e8
+           Anisotropy radius; default=1e8
         mj : list, required for multi-mass system
-          Mean mass of each component; default=None
+           Mean mass of each component; default=None
         Mj : list, required for multi-mass system
            Total mass of each component; default=None
         delta : scalar, optional
               Index in s_j = s x mu_j^-delta; default=0.5
               See equation (24) in GZ15
         eta : scalar, optional
-              Index in ra_j = ra x mu_j^eta; default=0
-              See equation (25) in GZ15
+            Index in ra_j = ra x mu_j^eta; default=0
+            See equation (25) in GZ15
 
         Input for scaling:
         ==================
 
         G : scalar, optional
-           Final scaled gravitationsl const; default=0.004302 [(km/s)^2 pc/Msun]
+          Final scaled gravitationsl const; default=0.004302 [(km/s)^2 pc/Msun]
         M : scalar, optional
-           Final scaled mass; default=10^5 
+          Final scaled mass; default=10^5 
         r0, rh, rv, rt : scalar, optional
-                        Final scaled radius; default=rh=3 
+                       Final scaled radius; default=rh=3 
 
         Options:
         ========
@@ -142,7 +142,7 @@ class limepy:
         and print central densities of each bin over the total central density
         and the half-mass radius + half-mass radius in projection
 
-        >>> m = limepy(7, 1, mj=[0.3,1,5], Mj=[9,3,1], scale=True, project=True)
+        >>> m = limepy(7, 1, mj=[0.3,1,5], Mj=[9,3,1], rh=3, M=1e5, project=True)
         >>> print m.alpha, m.rh, m.rhp
         >>> [ 0.30721416  0.14103549  0.55175035] 3.0 2.25494426759
 
@@ -214,7 +214,7 @@ class limepy:
         self.phi0, self.g = phi0, g
 
         self._MS, self._RS, self._GS = 1e5, 3, 0.004302
-        self.scale_radius = 'rh'
+#        self.scale_radius = 'rh'
         self.scale = False
         self.project = False
         self.maxr = 1e10
@@ -245,15 +245,15 @@ class limepy:
             for key, value in kwargs.iteritems():
                 if key is 'G':
                     self._GS, self.scale = value, True
-                if key is 'M':
+                elif key is 'M':
                     self._MS, self.scale = value, True
-                if key is 'r0':
+                elif key is 'r0':
                     self._RS, self.scale_radius, self.scale = value,'r0', True
-                if key is 'rh':
+                elif key is 'rh':
                     self._RS, self.scale_radius, self.scale = value,'rh', True
-                if key is 'rv':
+                elif key is 'rv':
                     self._RS, self.scale_radius, self.scale = value,'rv', True
-                if key is 'rt':
+                elif key is 'rt':
                     self._RS, self.scale_radius, self.scale = value,'rt', True
                 else:
                     setattr(self, key, value)
@@ -656,7 +656,6 @@ class limepy:
         v2star =  Gstar*Mstar/Rstar
 
         # Update the scales that define the system (see Section 2.1.2 of GZ15)
-
         self.G *= Gstar
         self.rs = Rstar
         self.s2 *= v2star
@@ -886,6 +885,5 @@ class limepy:
 	    DF = numpy.zeros(max(len(r),len(v)))
 
         return DF
-
 
 
