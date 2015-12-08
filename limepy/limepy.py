@@ -160,17 +160,29 @@ class limepy:
             while self.diff > self.diffcrit:
                 self._poisson(True)
 
-                if (not self.converged):
-                    error = "Error: model did not converge in first iteration,"
-                    error += " try larger r_a / smaller phi_0"
-                    raise ValueError(error)
-                else:
+                # Not converged: decrease mf iteration index
+                if (not self.converged) and (self.mf_iter_index > 0.1):
+                    self.mf_iter_index -= 0.1
                     self._set_alpha()
+
+                # Converged: increase mf iteration index
+                if (self.converged):
+                    if (self.mf_iter_index < 2):
+                        self.mf_iter_index += 0.1
+                    self._set_alpha()
+
+                    # Halt if maximum number of iterations reached
                     if self.niter > self.max_mf_iter:
                         self.converged=False
                         error = "Error: mass function did not converge, "
                         error += " try larger phi_0"
                         raise ValueError(error)
+
+                # Halt 
+                if (not self.converged) and (self.mf_iter_index < 0.1):
+                    error = "Error: model did not converge in first iteration,"
+                    error += " try larger r_a / smaller phi_0"
+                    raise ValueError(error)
 
         self.r0 = 1.0
         if (self.multi): self.r0j = sqrt(self.s2j)*self.r0
@@ -365,9 +377,9 @@ class limepy:
                 M2 = self.Mj[j]/sum(self.Mj)
                 fracd=fracd+"%7.3f "%(( M1 - M2)/M2)
                 Mjit=Mjit+"%7.3f "%(self._Mjtot[j]/sum(self._Mjtot))
-            out = (self.niter, self.diff, self.converged, fracd, Mjit)
-            frm = " Iter %3i; diff = %8.1e; conv = %s;"
-            frm += " frac diff=%s; Mjtot=%s"
+            out = (self.niter, self.mf_iter_index, self.diff, self.converged*1, fracd, Mjit)
+            frm = " %2i; ind=%3.1f; diff= %6.1e; conv= %s;"
+            frm += " fdiff=%s; Mjtot=%s"
             print  frm%out
 
     def _poisson(self, potonly):
