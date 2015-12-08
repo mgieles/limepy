@@ -167,7 +167,7 @@ class limepy:
 
                 # Converged: increase mf iteration index
                 if (self.converged):
-                    if (self.mf_iter_index < 2):
+                    if (self.mf_iter_index < 1):
                         self.mf_iter_index += 0.1
                     self._set_alpha()
 
@@ -232,7 +232,7 @@ class limepy:
         self.max_step = self.maxr
         self.diffcrit = 1e-8
         self.max_arg_exp = 700  # Maximum argument for exponent and hyp1f1 func
-        self.max_mf_iter = 200  # Maximum number of iterations to find rho0j
+        self.max_mf_iter = 100  # Maximum number of iterations to find rho0j
         self.minimum_phi = 1e-8 # Stop criterion for integrator
         self.mf_iter_index = 0.5
         self.ode_atol = 1e-7
