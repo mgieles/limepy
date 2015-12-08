@@ -160,29 +160,17 @@ class limepy:
             while self.diff > self.diffcrit:
                 self._poisson(True)
 
-                # Not converged: decrease mf iteration index
-                if (not self.converged) and (self.mf_iter_index > 0.1):
-                    self.mf_iter_index -= 0.1
+                if (not self.converged):
+                    error = "Error: model did not converge in first iteration,"
+                    error += " try larger r_a / smaller phi_0"
+                    raise ValueError(error)
+                else:
                     self._set_alpha()
-
-                # Converged: increase mf iteration index
-                if (self.converged):
-                    if (self.mf_iter_index < 1):
-                        self.mf_iter_index += 0.1
-                    self._set_alpha()
-
-                    # Halt if maximum number of iterations reached
                     if self.niter > self.max_mf_iter:
                         self.converged=False
                         error = "Error: mass function did not converge, "
                         error += " try larger phi_0"
                         raise ValueError(error)
-
-                # Halt 
-                if (not self.converged) and (self.mf_iter_index < 0.1):
-                    error = "Error: model did not converge in first iteration,"
-                    error += " try larger r_a / smaller phi_0"
-                    raise ValueError(error)
 
         self.r0 = 1.0
         if (self.multi): self.r0j = sqrt(self.s2j)*self.r0
