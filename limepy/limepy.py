@@ -218,7 +218,7 @@ class limepy:
         self.scale_radius = None
         self.scale = False
         self.project = False
-        self.meanmassdef='global'
+        self.meanmassdef='central'
         self.maxr = 1e10
         self.max_step = self.maxr
         self.diffcrit = 1e-8
