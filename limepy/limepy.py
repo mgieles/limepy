@@ -58,6 +58,8 @@ class limepy:
 
         project : bool, optional
                 Compute model properties in projection; default=False
+        meanmass : string [global|central]
+                 Way mean mass is defined; default='global'
         potonly : bool, optional
                 Fast solution by solving potential only; default=False
         max_step : scalar, optional
@@ -216,6 +218,7 @@ class limepy:
         self.scale_radius = None
         self.scale = False
         self.project = False
+        self.meanmassdef='global'
         self.maxr = 1e10
         self.max_step = self.maxr
         self.diffcrit = 1e-8
@@ -313,7 +316,13 @@ class limepy:
     def _set_mass_function_variables(self):
         """ Multi-mass models: Set properties for each mass bin """
 
-        self.mmean = sum(self.mj*self.alpha)    # equation (26) GZ15
+        if self.meanmassdef=='global':
+            self.mmean = sum(self.mj*self.Mj/sum(self.Mj))        
+        elif self.meanmassdef=='central':
+            self.mmean = sum(self.mj*self.alpha)    # equation (26) GZ15
+        else:
+            raise ValueError(" meanmass must be 'global' or 'central'")
+
         self.mu = self.mj/self.mmean
         self.s2j = self.mu**(-2*self.delta)     # equation (24) GZ15
         self.raj = self.ra*self.mu**self.eta    # equation (25) GZ15
