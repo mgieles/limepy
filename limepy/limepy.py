@@ -58,7 +58,7 @@ class limepy:
 
         project : bool, optional
                 Compute model properties in projection; default=False
-        meanmass : string [global|central]
+        meanmassdef : string [global|central]
                  Way mean mass is defined; default='global'
         potonly : bool, optional
                 Fast solution by solving potential only; default=False
