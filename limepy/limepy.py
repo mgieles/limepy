@@ -156,23 +156,46 @@ class limepy:
 
         # In case of multi-mass model, iterate to find central densities
         # (see Section 2.2 in GZ15)
+        ratmp = self.ra*1.0
+
         if (self.multi):
+
+            # First solve isotropic model
+            self.ra = self.ramax*1.0
+
             self._init_multi(self.mj, self.Mj)
 
             while self.diff > self.diffcrit:
                 self._poisson(True)
-
                 if (not self.converged):
-                    error = "Error: model did not converge in first iteration,"
-                    error += " try larger r_a / smaller phi_0"
+                    error = "Error: rmax reached in mf iteration"
                     raise ValueError(error)
                 else:
                     self._set_alpha()
                     if self.niter > self.max_mf_iter:
                         self.converged=False
-                        error = "Error: mass function did not converge, "
-                        error += " try larger phi_0"
+                        error = "Error: maximum number of iterations reached "
                         raise ValueError(error)
+
+            # Now solve anistotropic multimass
+            if ratmp < self.ramax:
+                self.diff = 1
+                self.ra = ratmp*1.0
+                self._set_mass_function_variables()
+
+                while self.diff > self.diffcrit:
+                    self._poisson(True)
+                    if (not self.converged):
+                        error = "Error: rmax reached in mf iteration"
+                        raise ValueError(error)
+                    else:
+                        self._set_alpha()
+                        if self.niter > self.max_mf_iter:
+                            self.converged=False
+                            error = "Error: maximum number of iterations reached "
+                            raise ValueError(error)
+
+
 
         self.r0 = 1.0
         if (self.multi): self.r0j = sqrt(self.s2j)*self.r0
@@ -225,7 +248,7 @@ class limepy:
         self.max_arg_exp = 700  # Maximum argument for exponent and hyp1f1 func
         self.max_mf_iter = 100  # Maximum number of iterations to find rho0j
         self.minimum_phi = 1e-8 # Stop criterion for integrator
-        self.mf_iter_index = 0.5
+        self.mf_iter_index = 1.0
         self.ode_atol = 1e-7
         self.ode_rtol = 1e-7
         self.nmbin, self.delta, self.eta = 1, 0.5, 0.0
@@ -353,11 +376,11 @@ class limepy:
     def _set_alpha(self):
         """ Set central rho_j for next iteration """
 
-        # The power of mf_iter_index < 1 is used. This is different from the
-        # recommendation of Da Costa & Freeman 1976 and Gunn & Griffin 1979:
-        # mf_iter_index = 1, a smaller value leads to better convergens for
-        # low phi0 and wide MFs (i.e. when black-holes are considered), which
-        # can fail with an index of 1 (see Section 2.2, GZ15)
+        # The power of mf_iter_index = 1 is used as recommended by 
+        # Da Costa & Freeman 1976 and Gunn & Griffin 1979. In the paper a smaller
+        # value is recommended for better convergence, but now the anisotropic
+        # multi-mass models are solved by first solving the isotropic model, this
+        # is no longer necessary
 
         self.alpha *= (self.Mj/self._Mjtot)**self.mf_iter_index
         self.alpha/=sum(self.alpha)
