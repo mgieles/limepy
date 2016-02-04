@@ -59,7 +59,7 @@ class limepy:
         project : bool, optional
                 Compute model properties in projection; default=False
         meanmassdef : string [global|central]
-                 Way mean mass is defined; default='global'
+                    Definition of <m> in mu_j = m_j/<m>; default='central'
         potonly : bool, optional
                 Fast solution by solving potential only; default=False
         max_step : scalar, optional
@@ -159,10 +159,10 @@ class limepy:
         ratmp = self.ra*1.0
 
         if (self.multi):
-
+            # Feb 2016: New method to iterate on the MF.
             # First solve isotropic model
-            self.ra = self.ramax*1.0
 
+            self.ra = self.ramax*1.0 
             self._init_multi(self.mj, self.Mj)
 
             while self.diff > self.diffcrit:
