@@ -27,7 +27,6 @@ Also check out LIMEPY within the browser with mybinder
         :target: http://mybinder.org/repo/mgieles/limepy
 
 
---------
 * Free software: BSD license
 * Documentation: https://limepy.readthedocs.org.
 
