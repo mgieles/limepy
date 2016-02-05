@@ -25,7 +25,7 @@ Example Python codes using LIMEPY can be found in
 The notebooks can be opened interactively with mybinder:
 
 .. image:: http://mybinder.org/badge.svg 
-     :target: http://mybinder.org/repo/mgieles/limepy/notebooks
+     :target: http://mybinder.org/repo/mgieles/limepy
 
 
 * Free software: BSD license
