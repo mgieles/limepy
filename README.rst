@@ -19,7 +19,7 @@ lowered isothermal models as described in Gieles & Zocchi 2015, MNRAS,
 454, 576 (http://arxiv.org/abs/1508.02120)
 
 
-Several examples can be found in the [notebooks directory](https://github.com/mgieles/limepy/tree/master/notebooks)
+Example Python codes using LIMEPY can be found in <https://github.com/mgieles/limepy/tree/master/notebooks>
 
 * Free software: BSD license
 * Documentation: https://limepy.readthedocs.org.
