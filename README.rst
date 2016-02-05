@@ -19,13 +19,15 @@ lowered isothermal models as described in Gieles & Zocchi 2015, MNRAS,
 454, 576 (http://arxiv.org/abs/1508.02120)
 
 
-Example Python codes using LIMEPY can be found in
+Also check out LIMEPY within the browser with mybinder
 <https://github.com/mgieles/limepy/tree/master/notebooks>
 
 The notebooks can be opened interactively with mybinder:
 
 .. image:: http://mybinder.org/badge.svg 
-     :target: http://mybinder.org/repo/mgieles/limepy
+:target: http://mybinder.org/repo/mgieles/limepy
+.. image:: http://mybinder.org/badge.svg 
+	   :target: http://mybinder.org/repo/mgieles/limepy
 
 
 * Free software: BSD license
