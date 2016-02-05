@@ -4,7 +4,8 @@ LIMEPY
 Lowered Isothermal Model Explorer in PYthon
 -------------------------------------------
 
-.. image:: http://mybinder.org/badge.svg :target: http://mybinder.org/repo/mgieles/limepy
+.. image:: http://mybinder.org/badge.svg 
+     :target: http://mybinder.org/repo/mgieles/limepy
 
 .. .. image:: https://badge.fury.io/py/limepy.png
 ..     :target: http://badge.fury.io/py/limepy
