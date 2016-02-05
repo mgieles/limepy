@@ -19,12 +19,12 @@ lowered isothermal models as described in Gieles & Zocchi 2015, MNRAS,
 454, 576 (http://arxiv.org/abs/1508.02120)
 
 
-Notebooks with example can be found in https://github.com/mgieles/limepy/tree/master/notebooks
+Notebooks with example can be found in <https://github.com/mgieles/limepy/tree/master/notebooks>
 
 Also check out LIMEPY within the browser with mybinder
 
-.. image:: http://mybinder.org/badge.svg 
-:target: http://mybinder.org/repo/mgieles/limepy
+   .. image:: http://mybinder.org/badge.svg 
+        :target: http://mybinder.org/repo/mgieles/limepy
 
 
 --------
