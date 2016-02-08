@@ -248,7 +248,7 @@ class limepy:
         self.max_arg_exp = 700  # Maximum argument for exponent and hyp1f1 func
         self.max_mf_iter = 100  # Maximum number of iterations to find rho0j
         self.minimum_phi = 1e-8 # Stop criterion for integrator
-        self.mf_iter_index = 1.0
+        self.mf_iter_index = 0.5
         self.ode_atol = 1e-7
         self.ode_rtol = 1e-7
         self.nmbin, self.delta, self.eta = 1, 0.5, 0.0
@@ -376,11 +376,10 @@ class limepy:
     def _set_alpha(self):
         """ Set central rho_j for next iteration """
 
-        # The power of mf_iter_index = 1 is used as recommended by 
-        # Da Costa & Freeman 1976 and Gunn & Griffin 1979. In the paper a smaller
-        # value is recommended for better convergence, but now the anisotropic
-        # multi-mass models are solved by first solving the isotropic model, this
-        # is no longer necessary
+        # The power of mf_iter_index = 0.5. This is lower than the recommended value
+        # of 1 as used in Da Costa & Freeman 1976 and Gunn & Griffin 1979. Better convergence
+        # is reached for a smaller value, but a user may experiment with larger values
+        # to gain speed
 
         self.alpha *= (self.Mj/self._Mjtot)**self.mf_iter_index
         self.alpha/=sum(self.alpha)
