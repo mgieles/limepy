@@ -155,7 +155,6 @@ class limepy:
         self.rhoint0 = [self._rhoint(self.phi0, 0, self.ramax)]
 
 
-        print " TEST ",self.rhoint0, self._rhoint_rot(self.phi0, 1e-5,0.5)
         # In case of multi-mass model, iterate to find central densities
         # (see Section 2.2 in GZ15)
 
@@ -343,6 +342,7 @@ class limepy:
 
         self.rot = False
         if self.omega > 0:
+            print " Warning: ROTATION PART NOT FINISHED! "
             self.rot = True
         return
 
