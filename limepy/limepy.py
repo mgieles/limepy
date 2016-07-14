@@ -2,11 +2,11 @@
 from __future__ import division, absolute_import
 import numpy
 import scipy
-from numpy import exp, sqrt, pi, sin
+from numpy import exp, sqrt, pi, sin, cos
 from scipy.interpolate import PiecewisePolynomial
 from scipy.special import gamma, gammainc, hyp1f1
-from scipy.integrate import ode, simps
-from math import factorial
+from scipy.integrate import ode, simps, quad
+from math import factorial, sinh
 
 #     Authors: Mark Gieles, Alice Zocchi (Surrey 2015)
 
@@ -154,13 +154,16 @@ class limepy:
         self._set_kwargs(phi0, g, **kwargs)
         self.rhoint0 = [self._rhoint(self.phi0, 0, self.ramax)]
 
+
+        print " TEST ",self.rhoint0, self._rhoint_rot(self.phi0, 1e-5,0.5)
         # In case of multi-mass model, iterate to find central densities
         # (see Section 2.2 in GZ15)
-        ratmp = self.ra*1.0
 
         if (self.multi):
             # Feb 2016: New method to iterate on the MF.
             # First solve isotropic model
+
+            ratmp = self.ra*1.0
 
             self.ra = self.ramax*1.0 
             self._init_multi(self.mj, self.Mj)
@@ -177,7 +180,7 @@ class limepy:
                         error = "Error: maximum number of iterations reached "
                         raise ValueError(error)
 
-            # Now solve anistotropic multimass
+            # Now solve anisotropic multimass
             if ratmp < self.ramax:
                 self.diff = 1
                 self.ra = ratmp*1.0
@@ -192,16 +195,21 @@ class limepy:
                         self._set_alpha()
                         if self.niter > self.max_mf_iter:
                             self.converged=False
-                            error = "Error: maximum number of iterations reached "
+                            error = "Error: maximum number of iterations reached"
                             raise ValueError(error)
-
 
 
         self.r0 = 1.0
         if (self.multi): self.r0j = sqrt(self.s2j)*self.r0
 
-        # Solve Poisson equation to get the potential
-        self._poisson(self.potonly)
+        # ROT
+        if (self.rot):
+            self._poisson_rot()
+
+        else:
+            # Solve Poisson equation to get the potential
+            self._poisson(self.potonly)
+
         if (self.multi): self.Mj = self._Mjtot
 
         # Optional scaling
@@ -235,6 +243,9 @@ class limepy:
 
         if (g<0): raise ValueError("Error: g must be larger or equal to 0")
         if (g>=3.5): raise ValueError("Error: for g>=3.5 models are infinite")
+
+        # ROT
+        self.omega = 0
 
         self.phi0, self.g = phi0, g
         self._MS, self._RS, self._GS = None, None, None
@@ -304,13 +315,16 @@ class limepy:
             if (self.scale):
                 if self._MS is None:
                     self._MS = 1e5
-                    if (self.verbose): print " No mass-scale provided, set to default M = 1e5"
+                    if (self.verbose): 
+                        print " No mass-scale provided, set to default M = 1e5"
                 if self._RS is None:
                     self._RS, self.scale_radius = 3, 'rh'
-                    if (self.verbose): print " No radius-scale provided, set to default rh = 3"
+                    if (self.verbose): 
+                        print " No radius-scale provided, set to default rh = 3"
                 if self._GS is None:
                     self._GS = 0.004302
-                    if (self.verbose): print " No G provided, set to default: G = 0.004302"
+                    if (self.verbose): 
+                        print " No G provided, set to default: G = 0.004302"
                 if (self.verbose): 
                     vars=(self._GS, self._MS, self.scale_radius, self._RS)
                     print " Model scaled to: G = %s, M = %s, %s = %s"%vars
@@ -325,8 +339,11 @@ class limepy:
         self.raj = numpy.array([self.ra])
         
         if self.potonly and self.project:
-            raise ValueError('Error: You must not use potonly option when projection is required')
-        
+            raise ValueError('Error: You must not use potonly and project')
+
+        self.rot = False
+        if self.omega > 0:
+            self.rot = True
         return
 
     def _logcheck(self, t, y):
@@ -347,8 +364,8 @@ class limepy:
             raise ValueError(" meanmass must be 'global' or 'central'")
 
         self.mu = self.mj/self.mmean
-        self.s2j = self.mu**(-2*self.delta)     # equation (24) GZ15
-        self.raj = self.ra*self.mu**self.eta    # equation (25) GZ15
+        self.s2j = self.mu**(-2*self.delta)         # equation (24) GZ15
+        self.raj = self.ra*self.mu**self.eta        # equation (25) GZ15
 
         self.phi0j = self.phi0/self.s2j
         self.rhoint0 = numpy.zeros(self.nmbin)
@@ -377,9 +394,9 @@ class limepy:
         """ Set central rho_j for next iteration """
 
         # The power of mf_iter_index = 0.5. This is lower than the recommended value
-        # of 1 as used in Da Costa & Freeman 1976 and Gunn & Griffin 1979. Better convergence
-        # is reached for a smaller value, but a user may experiment with larger values
-        # to gain speed
+        # of 1 as used in Da Costa & Freeman 1976 and Gunn & Griffin 1979. Better 
+        # convergence is reached for a smaller value, but a user may experiment with 
+        # larger values to gain speed
 
         self.alpha *= (self.Mj/self._Mjtot)**self.mf_iter_index
         self.alpha/=sum(self.alpha)
@@ -396,7 +413,8 @@ class limepy:
                 M2 = self.Mj[j]/sum(self.Mj)
                 fracd=fracd+"%7.3f "%(( M1 - M2)/M2)
                 Mjit=Mjit+"%7.3f "%(self._Mjtot[j]/sum(self._Mjtot))
-            out = (self.niter, self.mf_iter_index, self.diff, self.converged*1, fracd, Mjit)
+            out = (self.niter, self.mf_iter_index, self.diff, self.converged*1,\
+                   fracd, Mjit)
             frm = " %2i; ind=%3.1f; diff= %6.1e; conv= %s;"
             frm += " fdiff=%s; Mjtot=%s"
             print  frm%out
@@ -560,7 +578,6 @@ class limepy:
             # Calculate anisotropy profile (equation 32 of GZ15)
             self.beta = self._beta(self.r, self.v2r, self.v2t)
 
-
     def _rhohat(self, phi, r, j):
         """
         Wrapper for _rhoint when either: both phi or r are arrays, or both
@@ -690,8 +707,86 @@ class limepy:
 
         dVdvdr = (4*pi)**2*x**2 * (2*y[0])**1.5/3 if (x>0) and (y[0]>0) else 0
         derivs.append(dVdvdr)
-
         return derivs
+
+    
+    # ROT: UNDER CONSTRUCTIONS  ##############
+    def _poisson_rot(self):
+        self._init_rot()
+        diff_rot = 1e99
+        while (diff_rot > self.diff_rot_crit):
+            # Compute density
+            rho_l = self._rhohat_rot()
+            self.rho_l = rho_l
+            # Compute potential
+
+            diff_rot = 0
+
+    def _phil_rot(self):
+        phi_l = numpy.zeros(len(self.r)*nl).reshape(len(self.r), nl)
+
+        phi_l[:,0] = self.phi0*sqrt(2)
+
+    def legendre_Ul(self, l, theta):
+        il = l/2.0
+        dl = 1.0/2**l
+        m = numpy.arange(il+1)
+        cm = gamma(2*l-2*m+1)*(-1)**m/(gamma(m+1)*gamma(l-m+1)*gamma(l-2*m+1))
+        gm = cos(theta)**(l-2*m)
+        Pl = dl*numpy.sum(cm*gm)
+        return sqrt((2*l+1)/2)*Pl
+
+    def _rhohat_rot(self):
+        for ip in range(len(self.r)):
+            for it in range(self.ntheta):
+                self.rhon_g[ip][it] = self._rhoint_rot(self.phin_g[ip][it], self.r[ip], self.theta[it])
+
+        nl = int(self.lmax/2+1)
+        rho_l = numpy.zeros(len(self.r)*nl).reshape(len(self.r), nl)
+
+        for il in range(nl):
+            l = 2*il
+            for ir in range(len(self.r)):
+                Ul = numpy.zeros(len(self.theta))
+                for it in range(self.ntheta):
+                    Ul[it] = self.legendre_Ul(l, self.theta[it])
+                rho_l[ir][il] = -2.0 * simps(self.rhon_g[ir]*Ul, x=cos(self.theta))
+        
+        return rho_l
+
+    def _rhoint_rot(self, phi, r, theta):
+        # Compute eq 3 for scalar phi, r and theta
+        g, om = self.g, self.omega
+        Q = 3*sqrt(2)*r*sin(theta)
+        # Eq 3
+        integ = quad(lambda x: exp(phi-x)*gammainc(g, phi-x)*numpy.sinh(om*Q*x**0.5), 0, phi)[0]
+
+        return integ/(om*Q*gamma(1.5))
+
+    def _init_rot(self):
+        self.lmax = 6
+        self.diff_rot_crit = 1e-3
+
+        # Grid params
+        self.ntheta = (2*self.lmax + 1)
+
+        # Compute spherical model first
+        self._poisson(True)
+        phin = self.phi
+        self.theta = numpy.linspace(1e-4, 0.5*pi, self.ntheta) 
+
+        # Set up grid
+        self.r_g, self.theta_g = numpy.meshgrid(self.r, self.theta, indexing ='ij')
+        self.phin_g, tmp = numpy.meshgrid(self.phi, self.theta, indexing ='ij')
+        self.rhon_g = self.phin_g*0.0
+
+        # Fudge TBD
+        self.r[0] = 0.5*self.r[1]
+
+        # Make copy for iterations
+        self.phin_prev_g = self.phin_g*1.0
+        return 
+    ################
 
     def _setup_phi_interpolator(self):
         """ Setup interpolater for phi, works on scalar and arrays """

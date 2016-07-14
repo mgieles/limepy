@@ -1,0 +1,47 @@
+__init__
+	if (rot):
+	   poissonrot
+	else
+           poisson
+		
+
+
+    initialise:
+    1. solve phi(r) and create grid phi(r, theta)
+
+    iterate:
+    1. compute rho(r, theta) with phi(r, theta) from eq 3
+    2. compute rho_l(r) from rho(r,theta) eq 10
+    3. compute phi_l^n(r) from rho_l^(n-1)(r)
+    4. compute phi^n(r, theta) from eq. 9
+    5. return to 1. or finish if (exit_condition)
+
+Functions:
+ _poisson_rot():
+
+  _init_rot()
+    compute spherical model fill phin(r,t) and copy to phin_prev(r,t)
+    setup grid in r and theta:
+      r : use r from phin(r,t)
+      theta : ntheta(lmax) steps between 0 and 0.5*pi
+
+  while (diffrot > diffrotcrit):
+    _rhohat_rot : wrap rhointrot 
+    	         integrate 10                      (step 2)
+	         return rho_l(r) 		
+	
+    _rhoint_rot : compute eq 3                      (step 1)
+
+    _phil_rot : equation 12 and 13 for 0 <= l <= lmax  (step 3)
+                sum over phi_l (eq 9)                  (step 4)
+       	         return 2d array phi(r, theta)
+
+    _exit_check_rot() : 
+         diffrot = 
+         abs(phi(r,t)^n - phi(r,t)^(n-1))/phi(r,t)^(n)) < 1e-3
+         copy phin(r,t) to phin_prev(r,t)
+
+
+
+
+def rhoint		
