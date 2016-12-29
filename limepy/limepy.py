@@ -2,8 +2,8 @@
 from __future__ import division, absolute_import
 import numpy
 import scipy
+from scipy.interpolate import BPoly
 from numpy import exp, sqrt, pi, sin, cos
-from scipy.interpolate import PiecewisePolynomial
 from scipy.special import gamma, gammainc, hyp1f1
 from scipy.integrate import ode, simps, quad
 from math import factorial, sinh
@@ -502,8 +502,12 @@ class limepy:
             rhotmp += self.alpha[j]*self._rhohat(phi, self.r[ih:ih+2], j)
         drdm = 1./(4*pi*self.r[ih:ih+2]**2*rhotmp)
         rmc_and_derivs = numpy.vstack([[self.r[ih:ih+2]],[drdm]]).T
-        self.rh = float(PiecewisePolynomial(self.mc[ih:ih+2], rmc_and_derivs,
-                                      direction=1)(0.5*self.mc[-1]))
+
+#        scipy v0.13.0 and older notation
+#        self.rh = float(PiecewisePolynomial(self.mc[ih:ih+2], rmc_and_derivs,
+#                                      direction=1)(0.5*self.mc[-1]))
+
+        self.rh = float(BPoly.from_derivatives(self.mc[ih:ih+2], rmc_and_derivs)(0.5*self.mc[-1]))
 
         self.rv = -0.5*self.G*self.M**2/self.U
 
@@ -799,7 +803,9 @@ class limepy:
             phi_and_derivs = numpy.vstack([[self.phi],[self.dphidr1]]).T
         else:
             phi_and_derivs = numpy.vstack([[self.phihat],[self.dphidrhat1]]).T
-        self._phi_poly = PiecewisePolynomial(self.r,phi_and_derivs,direction=1)
+
+#        self._phi_poly = PiecewisePolynomial(self.r,phi_and_derivs)
+        self._phi_poly = BPoly.from_derivatives(self.r,phi_and_derivs)
 
     def _scale(self):
         """ Scales the model to the units set in the input: GS, MS, RS """
@@ -1047,3 +1053,4 @@ class limepy:
 
 
 
+j=limepy(7,1)
