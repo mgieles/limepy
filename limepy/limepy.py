@@ -357,7 +357,8 @@ class limepy:
         """ Multi-mass models: Set properties for each mass bin """
 
         if self.meanmassdef=='global':
-            self.mmean = sum(self.mj*self.Mj/sum(self.Mj))        
+            Nj = self.Mj/self.mj
+            self.mmean = sum(self.Mj/sum(Nj))        
         elif self.meanmassdef=='central':
             self.mmean = sum(self.mj*self.alpha)    # equation (26) GZ15
         else:
@@ -502,10 +503,6 @@ class limepy:
             rhotmp += self.alpha[j]*self._rhohat(phi, self.r[ih:ih+2], j)
         drdm = 1./(4*pi*self.r[ih:ih+2]**2*rhotmp)
         rmc_and_derivs = numpy.vstack([[self.r[ih:ih+2]],[drdm]]).T
-
-#        scipy v0.13.0 and older notation
-#        self.rh = float(PiecewisePolynomial(self.mc[ih:ih+2], rmc_and_derivs,
-#                                      direction=1)(0.5*self.mc[-1]))
 
         self.rh = float(BPoly.from_derivatives(self.mc[ih:ih+2], rmc_and_derivs)(0.5*self.mc[-1]))
 
@@ -804,7 +801,6 @@ class limepy:
         else:
             phi_and_derivs = numpy.vstack([[self.phihat],[self.dphidrhat1]]).T
 
-#        self._phi_poly = PiecewisePolynomial(self.r,phi_and_derivs)
         self._phi_poly = BPoly.from_derivatives(self.r,phi_and_derivs)
 
     def _scale(self):
