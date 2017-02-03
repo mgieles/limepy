@@ -909,7 +909,8 @@ class limepy:
             v2R[i] = abs(2.0*simps(betaterm2*self.rho[c]*self.v2r[c], x=z))
             v2R[i] /= Sigma[i]
 
-            v2T[i] = abs(2.0*simps(self.rho[c]*self.v2t[c]/2., x=z)/Sigma[i])
+            v2T[i] = abs(2.0*simps(self.rho[c]*self.v2t[c]/2., x=z))
+            v2T[i] /= Sigma[i]
 
             # Cumulative mass in projection
             if (i>0):
@@ -945,13 +946,42 @@ class limepy:
         self.v2p, self.v2R, self.v2T = v2p, v2R, v2T
         self.mcp = mcp
 
-        # Compute half-mass radii in projection
+        # TBD: Compute half-mass radii in projection 
 
         if (self.multi):
             self.Sigmaj = Sigmaj
             self.v2pj, self.v2Rj, self.v2Tj =  v2pj, v2Rj, v2Tj
-        return
 
+
+        return
+        
+    def get_losaccdist(self, R):
+        # Under construction!
+
+        # Return the los acceleration distribution as a function z
+
+        # Fill z array with same length as r
+        # Note that losaccdist(-z) = -losaccdist(z)
+        # and losaccdist(z>rt) = GM/r^2
+
+        self.z = self.r*1.0
+        self.losaccdist = numpy.zeros_like(self.r)
+
+        for i in range(1,self.nstep):
+            r = sqrt(R**2 + self.z[i]**2)
+
+            Mz = numpy.interp(r, self.r, self.mc)
+            self.losaccdist[i] = self.G*Mz*self.z[i]/r**3
+
+        if (self.scale):
+            # current units (km/s)^2/pc
+            # Convert to m/s^2 
+            pc2m = 3.0857e16
+            self.losaccdist *= 1e6/pc2m
+        
+        return 
+
+     
     def interp_phi(self, r):
         """ Returns interpolated potential at r, works on scalar and arrays """
 
@@ -1046,7 +1076,3 @@ class limepy:
 	    DF = numpy.zeros(max(len(r),len(v)))
 
         return DF
-
-
-
-j=limepy(7,1)
