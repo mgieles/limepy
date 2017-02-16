@@ -103,7 +103,7 @@ class sample:
         # Sample random values for x = k**1.5
         if (self.verbose): print " sample v ..."
         self.xmax= self.phihat**1.5
-
+        print self.phihat
         nx = 10
         self.nx = nx
         frac = numpy.linspace(0,1,nx+1)
@@ -298,3 +298,5 @@ class sample:
             for j in range(m.nmbin):
                 c=(self.m==m.mj[j])
                 print " 2Kr/Ktj: sample = %12.4e; model = %12.4e"%(2*sum(self.vr[c]**2)/sum(self.vt[c]**2),2*m.Krj[j]/m.Ktj[j])
+
+

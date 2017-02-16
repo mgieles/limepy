@@ -901,8 +901,12 @@ class limepy:
             z = sqrt(abs(r**2 - R[i]**2)) # avoid small neg. values
 
             Sigma[i] = 2.0*abs(simps(self.rho[c], x=z))
+
             betaterm1 = 1 if i==0 else 1-self.beta[c]*R[i]**2/self.r[c]**2
-            betaterm2 = 1 if i==0 else 1-self.beta[c]*(1-R[i]**2/self.r[c]**2)
+
+            # eq 41 in paper has a small mistake:  (1-R^2)/r^2 should be (1-R^2/r^2) as below
+            betaterm2 = 1 - self.beta[c] if i==0 else 1-self.beta[c]*(1-R[i]**2/self.r[c]**2)
+
             v2p[i] = abs(2.0*simps(betaterm1*self.rho[c]*self.v2r[c], x=z))
             v2p[i] /= Sigma[i]
 
