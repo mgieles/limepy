@@ -913,7 +913,7 @@ class limepy:
             v2R[i] = abs(2.0*simps(betaterm2*self.rho[c]*self.v2r[c], x=z))
             v2R[i] /= Sigma[i]
 
-            v2T[i] = abs(2.0*simps(self.rho[c]*self.v2t[c]/2., x=z))
+            v2T[i] = abs(simps(self.rho[c]*self.v2t[c], x=z))
             v2T[i] /= Sigma[i]
 
             # Cumulative mass in projection
@@ -930,10 +930,11 @@ class limepy:
                     Sigmaj[j,i] = 2.0*simps(self.rhoj[j,c], x=z)
                     if (i==0):
                         betaterm1 = 1
-                        betaterm2 = 1
+                        betaterm2 = 1 -self.betaj[j,c]
                     else:
                         betaterm1 = 1-self.betaj[j,c]*R[i]**2/self.r[c]**2
-                        betaterm2 = 1-self.betaj[j,c]*(1-R[i]**2)/self.r[c]**2
+                        # eq 41 in paper has a small mistake:  (1-R^2)/r^2 should be (1-R^2/r^2) as below
+                        betaterm2 = 1-self.betaj[j,c]*(1-R[i]**2/self.r[c]**2)
 
                     v2int = simps(betaterm1*self.rhoj[j,c]*self.v2rj[j,c], x=z)
                     v2pj[j,i] = abs(2.0*v2int)
