@@ -1033,16 +1033,15 @@ class limepy:
 
                 # Normalize to 1
                 Paz /= rhoz_spl.integral(0, zt)
-                self.z = z
+                self.z = z 
+                self.az = az
                 self.Paz = Paz
                 self.azmax = azmax
                 self.zmax = zmax
             else:
                 self.Paz = 0
-                self.z = 0
         else:
             self.Paz = 0
-            self.z = 0
         
         return 
 
