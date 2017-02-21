@@ -2,8 +2,8 @@
 from __future__ import division, absolute_import
 import numpy
 import scipy
-from scipy.interpolate import BPoly
-from numpy import exp, sqrt, pi, sin, cos
+from scipy.interpolate import BPoly, interp1d, UnivariateSpline
+from numpy import exp, sqrt, pi, sin, cos, log10
 from scipy.special import gamma, gammainc, hyp1f1
 from scipy.integrate import ode, simps, quad
 from math import factorial, sinh
@@ -960,29 +960,89 @@ class limepy:
 
         return
         
-    def get_losaccdist(self, R):
-        # Under construction!
+    def get_Paz(self, az_data, R_data):
+        # Under construction !!! 
 
-        # Return the los acceleration distribution as a function z
+        # Return P(az|R)
 
-        # Fill z array with same length as r
-        # Note that losaccdist(-z) = -losaccdist(z)
-        # and losaccdist(z>rt) = GM/r^2
+        az_data = abs(az_data) # Consider only positive values
+        
+        # Assumes units of az [m/s^3] if self.G ==0.004302, else models units
+        # Conversion factor from [pc (km/s)^2/Msun] -> [m/s^3]
+        az_fac = 1./3.0857e10 if (self.G==0.004302) else 1
+        
+        if (R_data < self.rt):
+            nz = self.nstep                   # Number of z value equal to number of r values
+            zt = sqrt(self.rt**2 - R_data**2) # maximum z value at R
 
-        self.z = self.r*1.0
-        self.losaccdist = numpy.zeros_like(self.r)
+            z = numpy.logspace(log10(self.r[1]), log10(zt), nz)
 
-        for i in range(1,self.nstep):
-            r = sqrt(R**2 + self.z[i]**2)
+            spl_Mr = UnivariateSpline(self.r, self.mc, s=0, ext=1)  # Spline for enclosed mass
 
-            Mz = numpy.interp(r, self.r, self.mc)
-            self.losaccdist[i] = self.G*Mz*self.z[i]/r**3
+            r = sqrt(R_data**2 + z**2)                        # Local r array
+            az = self.G*spl_Mr(r)*z/r**3                     # Acceleration along los
+            az[-1] = self.G*spl_Mr(self.rt)*zt/self.rt**3    # Ensure non-zero final data point
 
-        if (self.scale):
-            # current units (km/s)^2/pc
-            # Convert to m/s^2 
-            pc2m = 3.0857e16
-            self.losaccdist *= 1e6/pc2m
+            az *= az_fac # convert to [m/s^2]
+            az_spl = UnivariateSpline(z, az, k=4, s=0, ext=1) # 4th order needed to find max (can be done easier?)
+            
+            zmax = az_spl.derivative().roots()  # z where az = max(az), can be done without 4th order spline?
+            azt = az[-1]                        # acceleration at the max(z) = sqrt(r_t**2 - R**2)
+
+            # Setup spline for rho(z)
+            rho_spl = UnivariateSpline(self.r, self.rho, ext=1, s=0)
+            rhoz = rho_spl(sqrt(z**2 + R_data**2))
+            rhoz_spl = UnivariateSpline(z, rhoz, ext=1, s=0)
+
+            # Now compute P(a_z|R)
+            # There are 2 possibilities depupending on R:
+            #  (1) the maximum acceleration occurs within the cluster boundary, or 
+            #  (2) max(a_z) = a_z,t (this happens when R ~ r_t)
+            
+            nr, k = nz, 3 # bit of experimenting
+
+            # Option (1): zmax < max(z)
+            if len(zmax)>0:
+                zmax = zmax[0] # Take first entry for the rare cases with multiple peaks in spline
+
+                # Set up 2 splines for the inverse z(a_z) for z < zmax and z > zmax
+                z1 = numpy.linspace(z[0], 0.999*zmax, nr)
+                z2 = (numpy.linspace(0.999*zmax, z[-1], nr))[::-1] # Reverse z for ascending az
+                
+                z1_spl = UnivariateSpline(az_spl(z1), z1, k=k, s=0, ext=1)
+                z2_spl = UnivariateSpline(az_spl(z2), z2, k=k, s=0, ext=1)
+
+            # Option 2: zmax = max(z)
+            else: 
+                zmax = z[-1]
+                z1 = numpy.linspace(z[0], 0.999*zmax, nr)
+                z1_spl = UnivariateSpline(az_spl(z1), z1, k=k, s=0, ext=1)
+
+            # Maximum acceleration along this los
+            azmax = az_spl(zmax)
+
+            # Now determine P(az_data|R)
+            if (az_data < azmax):
+                z1 = max([z1_spl(az_data), z[0]]) # first radius where az = az_data
+                Paz = rhoz_spl(z1)/abs(az_spl.derivatives(z1)[1])
+
+                if (az_data> azt):
+                    # Find z where a_z = a_z,t
+                    z2 = z2_spl(az_data)
+                    Paz += rhoz_spl(z2)/abs(az_spl.derivatives(z2)[1])
+
+                # Normalize to 1
+                Paz /= rhoz_spl.integral(0, zt)
+                self.z = z
+                self.Paz = Paz
+                self.azmax = azmax
+                self.zmax = zmax
+            else:
+                self.Paz = 0
+                self.z = 0
+        else:
+            self.Paz = 0
+            self.z = 0
         
         return 
 
@@ -1081,3 +1141,4 @@ class limepy:
 	    DF = numpy.zeros(max(len(r),len(v)))
 
         return DF
+

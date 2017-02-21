@@ -103,7 +103,6 @@ class sample:
         # Sample random values for x = k**1.5
         if (self.verbose): print " sample v ..."
         self.xmax= self.phihat**1.5
-        print self.phihat
         nx = 10
         self.nx = nx
         frac = numpy.linspace(0,1,nx+1)
