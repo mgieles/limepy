@@ -144,7 +144,7 @@ class limepy:
         and print central densities of each bin over the total central density
         and the half-mass radius + half-mass radius in projection
 
-        >>> m = limepy(7, 1, mj=[0.3,1,5], Mj=[9,3,1], rh=3, M=1e5, project=True)
+        >>> m = limepy(7, 1, mj=[0.3,1,5], Mj=[9,3,1], rh=3, M=1e5,project=True)
         >>> print m.alpha, m.rh, m.rhp
         >>> [ 0.30721416  0.14103549  0.55175035] 3.0 2.25494426759
 
@@ -194,7 +194,7 @@ class limepy:
                         self._set_alpha()
                         if self.niter > self.max_mf_iter:
                             self.converged=False
-                            error = "Error: maximum number of iterations reached"
+                            error ="Error: maximum number of iterations reached"
                             raise ValueError(error)
 
 
@@ -285,27 +285,27 @@ class limepy:
                     self._MS, self.scale = value, True
                 elif key is 'r0':
                     if self.scale_radius is None:
-                        self._RS, self.scale_radius, self.scale = value,'r0', True
+                        self._RS,self.scale_radius,self.scale = value,'r0', True
                     else:
-                        error="Can not set scale radius to r0, already set to %s"
+                        error="Can not set scale radius to r0,already set to %s"
                         raise ValueError(error%self.scale_radius)
                 elif key is 'rh':
                     if self.scale_radius is None:
-                        self._RS, self.scale_radius, self.scale = value,'rh', True
+                        self._RS, self.scale_radius, self.scale=value,'rh', True
                     else:
-                        error="Can not set scale radius to rh, already set to %s"
+                        error="Can not set scale radius to rh,already set to %s"
                         raise ValueError(error%self.scale_radius)
                 elif key is 'rv':
                     if self.scale_radius is None:
-                        self._RS, self.scale_radius, self.scale = value,'rv', True
+                        self._RS, self.scale_radius, self.scale=value,'rv', True
                     else:
-                        error="Can not set scale radius to rv, already set to %s"
+                        error="Can not set scale radius to rv,already set to %s"
                         raise ValueError(error%self.scale_radius)
                 elif key is 'rt':
                     if self.scale_radius is None:
-                        self._RS, self.scale_radius, self.scale = value,'rt', True
+                        self._RS, self.scale_radius, self.scale=value,'rt', True
                     else:
-                        error="Can not set scale radius to rt, already set to %s"
+                        error="Can not set scale radius to rt,already set to %s"
                         raise ValueError(error%self.scale_radius)
                 else:
                     # Set input parameters
@@ -394,10 +394,10 @@ class limepy:
     def _set_alpha(self):
         """ Set central rho_j for next iteration """
 
-        # The power of mf_iter_index = 0.5. This is lower than the recommended value
-        # of 1 as used in Da Costa & Freeman 1976 and Gunn & Griffin 1979. Better 
-        # convergence is reached for a smaller value, but a user may experiment with 
-        # larger values to gain speed
+        # The power of mf_iter_index = 0.5. This is lower than the recommended 
+        # value of 1 as used in Da Costa & Freeman 1976 and Gunn & Griffin 1979.
+        # Better convergence is reached for a smaller value, but a user may 
+        # experiment with larger values to gain speed.
 
         self.alpha *= (self.Mj/self._Mjtot)**self.mf_iter_index
         self.alpha/=sum(self.alpha)
@@ -504,8 +504,7 @@ class limepy:
         drdm = 1./(4*pi*self.r[ih:ih+2]**2*rhotmp)
         rmc_and_derivs = numpy.vstack([[self.r[ih:ih+2]],[drdm]]).T
 
-        self.rh = float(BPoly.from_derivatives(self.mc[ih:ih+2], rmc_and_derivs)(0.5*self.mc[-1]))
-
+        self.rh = BPoly.from_derivatives(self.mc[ih:ih+2], rmc_and_derivs)(0.5*self.mc[-1])
         self.rv = -0.5*self.G*self.M**2/self.U
 
         # Additional stuff
@@ -1003,11 +1002,10 @@ class limepy:
 
             # Option (1): zmax < max(z)
             if len(zmax)>0:
-                zmax = zmax[0] # Take first entry for the rare cases with multiple peaks in spline
-
+                zmax = zmax[0] # Take first entry for the rare cases with multiple peaks
                 # Set up 2 splines for the inverse z(a_z) for z < zmax and z > zmax
-                z1 = numpy.linspace(z[0], 0.999*zmax, nr)
-                z2 = (numpy.linspace(0.999*zmax, z[-1], nr))[::-1] # Reverse z for ascending az
+                z1 = numpy.linspace(z[0], zmax, nr)
+                z2 = (numpy.linspace(zmax, z[-1], nr))[::-1] # Reverse z for ascending az
                 
                 z1_spl = UnivariateSpline(az_spl(z1), z1, k=k, s=0, ext=1)
                 z2_spl = UnivariateSpline(az_spl(z2), z2, k=k, s=0, ext=1)
@@ -1015,7 +1013,7 @@ class limepy:
             # Option 2: zmax = max(z)
             else: 
                 zmax = z[-1]
-                z1 = numpy.linspace(z[0], 0.999*zmax, nr)
+                z1 = numpy.linspace(z[0], zmax, nr)
                 z1_spl = UnivariateSpline(az_spl(z1), z1, k=k, s=0, ext=1)
 
             # Maximum acceleration along this los
@@ -1141,3 +1139,6 @@ class limepy:
 
         return DF
 
+
+k = limepy(5,1)
+print k.rh
