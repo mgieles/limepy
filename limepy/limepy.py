@@ -959,7 +959,7 @@ class limepy:
 
         return
         
-    def get_Paz(self, az_data, R_data):
+    def get_Paz(self, az_data, R_data, jns):
         # Under construction !!! 
 
         # Return P(az|R)
@@ -989,7 +989,12 @@ class limepy:
             azt = az[-1]                        # acceleration at the max(z) = sqrt(r_t**2 - R**2)
 
             # Setup spline for rho(z)
-            rho_spl = UnivariateSpline(self.r, self.rho, ext=1, s=0)
+            if jns == 0 and self.nmbin == 1:
+                rho = self.rho
+            else:
+                rho = self.rhoj[jns]
+
+            rho_spl = UnivariateSpline(self.r, rho, ext=1, s=0)
             rhoz = rho_spl(sqrt(z**2 + R_data**2))
             rhoz_spl = UnivariateSpline(z, rhoz, ext=1, s=0)
 
@@ -999,7 +1004,7 @@ class limepy:
             #  (2) max(a_z) = a_z,t (this happens when R ~ r_t)
             
             nr, k = nz, 3 # bit of experimenting
-
+            print " azt = ",azt
             # Option (1): zmax < max(z)
             if len(zmax)>0:
                 zmax = zmax[0] # Take first entry for the rare cases with multiple peaks
@@ -1139,6 +1144,3 @@ class limepy:
 
         return DF
 
-
-k = limepy(5,1)
-print k.rh
