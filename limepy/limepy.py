@@ -960,6 +960,10 @@ class limepy:
         return
         
     def get_Paz(self, az_data, R_data, jns):
+        """ 
+        Computes probability of line of sight acceleration at projected R : P(az|R)  
+        """
+
         # Under construction !!! 
 
         # Return P(az|R)
@@ -1004,7 +1008,7 @@ class limepy:
             #  (2) max(a_z) = a_z,t (this happens when R ~ r_t)
             
             nr, k = nz, 3 # bit of experimenting
-            print " azt = ",azt
+
             # Option (1): zmax < max(z)
             if len(zmax)>0:
                 zmax = zmax[0] # Take first entry for the rare cases with multiple peaks
