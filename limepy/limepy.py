@@ -59,7 +59,7 @@ class limepy:
         project : bool, optional
                 Compute model properties in projection; default=False
         meanmassdef : string [global|central]
-                    Definition of <m> in mu_j = m_j/<m>; default='central'
+                    Definition of <m> in mu_j = m_j/<m>; default='global'
         potonly : bool, optional
                 Fast solution by solving potential only; default=False
         max_step : scalar, optional
@@ -251,7 +251,7 @@ class limepy:
         self.scale_radius = None
         self.scale = False
         self.project = False
-        self.meanmassdef='central'
+        self.meanmassdef='global'
         self.maxr = 1e10
         self.max_step = self.maxr
         self.diffcrit = 1e-8
@@ -970,8 +970,8 @@ class limepy:
 
         az_data = abs(az_data) # Consider only positive values
         
-        # Assumes units of az [m/s^3] if self.G ==0.004302, else models units
-        # Conversion factor from [pc (km/s)^2/Msun] -> [m/s^3]
+        # Assumes units of az [m/s^2] if self.G ==0.004302, else models units
+        # Conversion factor from [pc (km/s)^2/Msun] -> [m/s^2]
         az_fac = 1./3.0857e10 if (self.G==0.004302) else 1
         
         if (R_data < self.rt):
@@ -1003,7 +1003,7 @@ class limepy:
             rhoz_spl = UnivariateSpline(z, rhoz, ext=1, s=0)
 
             # Now compute P(a_z|R)
-            # There are 2 possibilities depupending on R:
+            # There are 2 possibilities depending on R:
             #  (1) the maximum acceleration occurs within the cluster boundary, or 
             #  (2) max(a_z) = a_z,t (this happens when R ~ r_t)
             
