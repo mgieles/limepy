@@ -837,11 +837,10 @@ class limepy:
         self.A *= Mstar/(v2star**1.5*Rstar**3)
         self.volume *= v2star**1.5*Rstar**3
 
-        if (self.multi):
-            self.Mj *= Mstar
-            self.r0j *= Rstar
 
         # Scale density, velocity dispersion components, kinetic energy
+        self.rho = self.rhohat*Mstar/Rstar**3
+
         if (not self.potonly):
             self.rho = self.rhohat*Mstar/Rstar**3
             self.v2, self.v2r, self.v2t = (q*v2star for q in [self.v2,
