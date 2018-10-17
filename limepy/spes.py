@@ -85,11 +85,13 @@ class spes:
         Examples:
         =========
 
-        Construct a SPES model with W0=7, B=0.99, eta=0.1, M=1e5 Msun and rh=3 pc
-         and solve until 2rt
+        Construct a SPES model with W0=7, B=0.99, eta=0.1 for physical parameters
+        M=1e5 Msun, rh=3 pc. Project on the sky and solve until 2rt.
 
-        >>> s = limepy.spes(7, B=0.99, eta=0.1, nrt=2, M=1e5, rh=3)
+        >>> s = limepy.spes(7, B=0.99, eta=0.1, nrt=2, M=1e5, rh=3, project=True)
 
+        Plot surface density profile
+        >>> plt.plot(s.r, s.Sigma)
 
         """
 
