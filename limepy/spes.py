@@ -5,7 +5,7 @@ import scipy
 from scipy.interpolate import BPoly, interp1d, UnivariateSpline
 from numpy import exp, sqrt, pi, sin, cos, log10
 from scipy.special import gamma, gammainc, gammaincc, hyp1f1
-from scipy.integrate import ode, simps, quad
+from scipy.integrate import ode, simps
 from math import factorial, sinh
 
 #     Authors: Mark Gieles & Ian Clayon (Surrey 2018)
@@ -19,28 +19,34 @@ class spes:
         Spherical Potential Escapers Stitched models
 
         This code solves the models presented in Claydon et al. 2019 (C19)
-        and calculates radial profiles for some useful quantities. The models
-        are defined by the distribution function (DF) of equation (1) in C19.
+        and calculates radial profiles for some useful quantities. The 
+        models are defined by the distribution function (DF) of eq. (1) in 
+        C19.
 
-        Model parameters:
-        =================
+        Argument (required):
+        ====================
 
         phi0 : scalar, required
              Central dimensionless potential
+
+        Named arguments (required):
+        ===========================
+
         B : scalar, required
-          Reduction of the DF at trunction (0 < B < 1)
-        eta = : scalar, required
-          Velocity dispersion of PEs (0 < eta < 1)
+          Reduction of the DF at trunction [0-1]
+        eta  : scalar, required
+          Velocity dispersion of PEs in model units [0-1]
 
         Input for scaling:
         ==================
 
         G : scalar, optional
-          Final scaled gravitationsl const; default=0.004302 [(km/s)^2 pc/Msun]
+          Gravitational const; 0.004302 (km/s)^2 pc/Msun if both M and 
+                               scale radius are set (see below)
         M : scalar, optional
-          Final scaled mass; default=10^5 
+          Total mass of bound stars and PEs < rt
         r0, rh, rv, rt : scalar, optional
-                       Final scaled radius; default=rh=3 
+          Final scaled radius; default=rh=3 
 
         Options:
         ========
@@ -48,7 +54,7 @@ class spes:
         project : bool, optional
                 Compute model properties in projection; default=False
         nrt : scalar, optional
-              Solve model until nrt*rt (nrt > 1); default = 0
+              Solve model until nrt*rt; default=2
         potonly : bool, optional
                 Fast solution by solving potential only; default=False
         max_step : scalar, optional
@@ -72,7 +78,7 @@ class spes:
          U, Q : potential energy, virial ratio
 
          volume : phase-space volume occupied by model
-         nstep : number of integration steps (depends on ode_rtol & ode_atol)
+         nstep : number of integration steps (depends on ode_rtol&ode_atol)
          converged : bool flag to indicate whether model was solved
 
         Projected models:
@@ -85,10 +91,10 @@ class spes:
         Examples:
         =========
 
-        Construct a SPES model with W0=7, B=0.99, eta=0.1 for physical parameters
-        M=1e5 Msun, rh=3 pc. Project on the sky and solve until 2rt.
+        Construct a SPES model with W0=7, B=0.99, eta=0.1 for physical 
+        parameters M=1e5 Msun, rh=3 pc. Solve until 2rt and project on sky.
 
-        >>> s = limepy.spes(7, B=0.99, eta=0.1, nrt=2, M=1e5, rh=3, project=True)
+        >>> s = limepy.spes(7,B=0.99,eta=0.1,nrt=2,M=1e5,rh=3,project=True)
 
         Plot surface density profile
         >>> plt.plot(s.r, s.Sigma)
@@ -141,7 +147,7 @@ class spes:
         self.maxr = 1e99
         self.rt = 1e99
         self.max_step = self.maxr
-        self.max_arg_exp = 700  # Maximum argument for exponent and hyp1f1 func
+        self.max_arg_exp = 700  # Maximum argument for exponent 
         self.minimum_phi = 1e-8 # Stop criterion for integrator
 
         self.ode_atol = 1e-7
@@ -149,7 +155,7 @@ class spes:
         self.nmbin = 1 # for future expansion to multimass
 
         self.G = 9.0/(4.0*pi)
-        self.mu, self.alpha = numpy.array([1.0]), numpy.array([1.0])
+        self.mu, self.alpha = numpy.array([1.0]),numpy.array([1.0])
         self.s2 = 1.0
         self.s2j = numpy.array([1.0])
 
@@ -160,7 +166,7 @@ class spes:
         self._interpolator_set=False
 
         # Spes specific
-        self.nrt = 0
+        self.nrt = 2
         if kwargs is not None:
             for key, value in kwargs.iteritems():
                 # Check for scaling input (similar to LIMEPY)
@@ -300,8 +306,10 @@ class spes:
     def _logcheck2(self, t, y):
         """ Logs steps and checks for final values """
 
-        if (t>0): self.r, self._y = numpy.r_[self.r, t], numpy.c_[self._y, y]
-        self.nstep+=1
+        # Ensure that tidal radius value is not added again
+        if (t>self.rt):
+            self.r, self._y = numpy.r_[self.r, t], numpy.c_[self._y, y]
+            self.nstep+=1
 
         return 0 if (t<=self.nrt*self.rt) else -1
 
@@ -389,6 +397,7 @@ class spes:
             # Continue to solve until rlast
             sol.set_solout(self._logcheck2)
             sol.set_f_params(potonly)
+#            print " INIT =",self._y[:,-1]
             sol.set_initial_value(self._y[:,-1],self.rt)
             sol.integrate(self.nrt*self.rt)
 
@@ -471,10 +480,10 @@ class spes:
             if phie < self.max_arg_exp:
                 return (1 - self.B)*self.eta**3*exp(phie)*gammaincc(1.5, phie)
             else:
-                # TBD check whether needed
-                return 0*(1 - self.B)*self.eta**3*sqrt(phie)/gamma(1.5)
+                # TBD: needed?
+                return (1 - self.B)*self.eta**3*sqrt(phie)/gamma(1.5)
         else:
-            return (1 - self.B)*self.eta**3*exp(phie) #*gamma(1.5)
+            return (1 - self.B)*self.eta**3*exp(phie) 
 
     def _get_v2(self, phi, rho, j):
         v2 = numpy.zeros(phi.size)
@@ -593,14 +602,14 @@ class spes:
         self.mc *= Mstar
         self.U *= Mstar*v2star
         self.A *= Mstar/(v2star**1.5*Rstar**3)
+
+# TBD, needed?
 #        self.volume *= v2star**1.5*Rstar**3
 
         # Scale density, velocity dispersion components, kinetic energy
         self.rho = self.rhohat*Mstar/Rstar**3
         self.rhope = self.rhohatpe*Mstar/Rstar**3
-#        self.rhope = self.rhohatpe*Mstar/Rstar**3
 
-#TBD
         if (not self.potonly):
             self.v2 *= v2star 
             self.K *= Mstar*v2star 
@@ -634,43 +643,35 @@ class spes:
             c = (self.r >= R[i])
             r = self.r[c]
             z = sqrt(abs(r**2 - R[i]**2)) # avoid small neg. values
-
             Sigma[i] = 2.0*abs(simps(self.rho[c], x=z))
-#            if i==0:
-#                print len(self.rho), len(
-#            betaterm1 = 1 if i==0 else 1-self.beta[c]*R[i]**2/self.r[c]**2
-
-            # eq 41 in paper has a small mistake:  (1-R^2)/r^2 should be (1-R^2/r^2) as below
-#            betaterm2 = 1 - self.beta[c] if i==0 else 1-self.beta[c]*(1-R[i]**2/self.r[c]**2)
-
             v2p[i] = abs(2.0*simps(self.rho[c]*self.v2[c]/3., x=z))
             v2p[i] /= Sigma[i]
 
             v2R[i] = v2p[i]
             v2T[i] = v2p[i]
-#            v2R[i] = abs(2.0*simps(betaterm2*self.rho[c]*self.v2r[c], x=z))
-#            v2R[i] /= Sigma[i]
 
-#            v2T[i] = abs(simps(self.rho[c]*self.v2t[c], x=z))
-#            v2T[i] /= Sigma[i]
-
-#            # Cumulative mass in projection
+            # Cumulative mass in projection
             if (i>0):
                 x = self.r[i-1:i+1]
                 mcp[i] = mcp[i-1] + 2*pi*simps(x*Sigma[i-1:i+1], x=x)
             mcp[-1] = mcp[-2]
 
-#            # Radius containing half the mass in projection
+            # Radius containing half the mass in projection
             self.rhp = numpy.interp(0.5*mcp[-1], mcp, self.r)
 
+        # Find final value from extrapolating logarithmic slope
+        Sigma_slope = log10(Sigma[-2]/Sigma[-3])/log10(self.r[-2]/self.r[-3])
+        v2p_slope = log10(v2p[-2]/v2p[-3])/log10(self.r[-2]/self.r[-3])
+
+
+        Sigma[-1] = Sigma[-2]*(self.r[-1]/self.r[-2])**Sigma_slope
+        v2p[-1] = v2p[-2]*(self.r[-1]/self.r[-2])**v2p_slope
+        v2R[-1] = v2p[-1]
+        v2T[-1] = v2p[-1]
 
         self.R, self.Sigma = R, Sigma
         self.v2p, self.v2R, self.v2T = v2p, v2R, v2T
 #        self.mcp = mcp
-
-        # TBD: Compute half-mass radii in projection 
-
-
 
         return
         

@@ -6,5 +6,6 @@ __version__ = '0.1.0'
 
 from .limepy import limepy
 from .sample import sample
+from .spes import spes
 
 
