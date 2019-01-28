@@ -126,8 +126,10 @@ class spes:
                 print " M = %10.3f; U = %10.4f "%(self.M, self.U)
             else:
                 pV = self.rho[self.nbound-1]*self.v2[self.nbound-1]*(4.*pi/3)*self.rt**3
-                out1 = (self.M,self.U,self.K,-self.K/(self.U+3*pV))
-                frm = " M = %10.3e; U = %9.3e; K = %9.3e; Q = %6.4f; "
+                out1 = (self.U,self.K,pV, -self.K/(self.U+3*pV))
+                print " M = %10.3e "%self.M
+                frm = " U = %9.3e; K = %9.3e; p_eV_e = %9.3e; "
+                frm += "Q = -K/(U+3p_eV_e) = %5.3f "
                 print frm%out1
 
             out2 = (self.rv/self.rh, self.rh/self.r0, self.rt/self.r0)
@@ -200,7 +202,7 @@ class spes:
                         raise ValueError(error%self.scale_radius)
                 # SPES specific checks
                 elif key is 'C' :
-                    error="Can not set C, use either 2 from {B, eta, fpe}"
+                    error="Can not set C, use B & eta. C and fpe are computed internally"
                     raise ValueError(error)
                 else:
                     # Set input parameters

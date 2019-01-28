@@ -144,7 +144,8 @@ class limepy:
         and print central densities of each bin over the total central density
         and the half-mass radius + half-mass radius in projection
 
-        >>> m = limepy(7, 1, mj=[0.3,1,5], Mj=[9,3,1], rh=3, M=1e5,project=True)
+        >>> m = limepy(7, 1, mj=[0.3,1,5], Mj=[9,3,1], rh=3, M=1e5,project=True,\
+        ...: meanmassdef='central')
         >>> print m.alpha, m.rh, m.rhp
         >>> [ 0.30721416  0.14103549  0.55175035] 3.0 2.25494426759
 
@@ -830,6 +831,7 @@ class limepy:
         self.rh, self.rv = (q*Rstar for q in [self.rh,self.rv])
 
         self.M *= Mstar
+        self.Mj *= Mstar # 28/1/19 Thanks to William
         self.phi = self.phihat * v2star
         self.dphidr1 = self.dphidrhat1 * v2star/Rstar
         self.mc *= Mstar
