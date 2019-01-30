@@ -831,7 +831,6 @@ class limepy:
         self.rh, self.rv = (q*Rstar for q in [self.rh,self.rv])
 
         self.M *= Mstar
-        self.Mj *= Mstar # 28/1/19 Thanks to William
         self.phi = self.phihat * v2star
         self.dphidr1 = self.dphidrhat1 * v2star/Rstar
         self.mc *= Mstar
@@ -854,6 +853,8 @@ class limepy:
                 self.rhoj = self.rhohatj * Mstar/Rstar**3
                 for j in range(self.nmbin):
                     self.rhoj[j] *= self.alpha[j]
+                self.Mj *= Mstar # 28/1/19 Thanks to William
+
                 self.mcj *= Mstar
                 self.rhj *= Rstar
                 self.v2j,self.v2rj,self.v2tj=(q*v2star for q in
