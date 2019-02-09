@@ -517,8 +517,8 @@ class spes:
 
         phie = phi/self.eta**2
         if phi >= 0:
-            print phie, phi,self.eta**2,  exp(phie)*gammaincc(2.5, phie), sqrt(phie)/gamma(2.5)
             if phie < self.max_arg_exp:
+                # exp(x) only works for x<700 
                 return (1 - self.B)*self.eta**5*exp(phie)*gammaincc(2.5, phie)
             else:
                 # 9/2/2019: correct asymptotic behaviour
