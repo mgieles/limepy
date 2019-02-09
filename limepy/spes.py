@@ -517,14 +517,15 @@ class spes:
 
         phie = phi/self.eta**2
         if phi >= 0:
-            # TBD: Check whether self.max_arg_exp hs correct value
+            print phie, phi,self.eta**2,  exp(phie)*gammaincc(2.5, phie), sqrt(phie)/gamma(2.5)
             if phie < self.max_arg_exp:
                 return (1 - self.B)*self.eta**5*exp(phie)*gammaincc(2.5, phie)
             else:
-                # TBD: check assymptotic values
-                return 0*(1 - self.B)*self.eta**5*sqrt(phie)/gamma(2.5)
+                # 9/2/2019: correct asymptotic behaviour
+                return (1 - self.B)*self.eta**5*phie**1.5/gamma(2.5)
+
         else:
-            return (1 - self.B)*self.eta**5*exp(phie) #*gamma(2.5)
+            return (1 - self.B)*self.eta**5*exp(phie) 
 
     def _beta(self, r, v2r, v2t):
         # NOT IN USE
