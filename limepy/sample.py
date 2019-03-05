@@ -86,7 +86,6 @@ class sample:
 
         if not m.multi:
             self.r = numpy.interp(ran, m.mc/m.mc[-1], m.r)
-            self.rmark = self.r
 
         if m.multi:
             self.r = numpy.zeros(self.N)
@@ -97,6 +96,7 @@ class sample:
 
         # get dimensionless potential
         self.phihat = m.interp_phi(self.r)/m.s2
+
         return
 
     def _sample_v(self, m):
@@ -129,6 +129,10 @@ class sample:
             self._sample_k(j)
 
         self.r = self.rfinal
+        self.phihat = m.interp_phi(self.r)/m.s2
+
+        self.phi = -self.phihat*m.s2 - m.G*m.M/m.rt
+
         self._sample_angles(self.N)
 
     def _compute_cdf(self):

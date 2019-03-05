@@ -18,12 +18,12 @@ Create a Wilson model with :math:`\hat{\phi}_0 = 12` in Henon/N-body
 units: :math:`G=M=r_{\rm v}=1` and print the normalisation
 constant :math:`A` of the DF and the DF in the centre:
 
->>> w = limepy(12, 2, scale=True, GS=1, MS=1, RS=1, scale_radius='rv')
+>>> w = limepy(12, 2, G=1, M=1, rv=1)
 >>> print w.A, w.df(0,0)
 
 Multi-mass in physical units with :math:`r_{\rm h} = 3` pc and :math:`M = 10^5\,M_\odot` and print central densities of each bin over the total central density and the half-mass radius + half-mass radius in projection
 
->>> m = limepy(7, 1, mj=[0.3,1,5], Mj=[9,3,1], scale=True, project=True)
+>>> m = limepy(7, 1, mj=[0.3,1,5], Mj=[9,3,1], M=1e5, rh=3 project=True)
 
 Create a discrete sample of points sampled from this multi-mass model 
 
