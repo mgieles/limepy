@@ -29,7 +29,10 @@ Also check out LIMEPY within the browser with mybinder
 
 * Free software: BSD license
 * Documentation: https://limepy.readthedocs.org. 
-[![Documentation Status](https://readthedocs.org/projects/limepy/badge/?version=latest)](https://limepy.readthedocs.io/en/latest/?badge=latest)
+
+.. image:: https://readthedocs.org/projects/limepy/badge/?version=latest
+:target: https://limepy.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
 
 
 Features
