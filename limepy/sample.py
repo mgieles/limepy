@@ -38,6 +38,8 @@ class sample:
     def _set_params_and_init(self, mod, **kwargs):
         if not mod.converged: raise ValueError(" Error: This model has not converged, abort sampling ...")
 
+        if (mod.model=="spes"):
+            raise ValueError("Sampling from SPES model not implemented ...")
         self.seed = 199
         self.verbose = False
         self.N = 1000

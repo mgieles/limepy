@@ -244,6 +244,8 @@ class limepy:
         if (g<0): raise ValueError("Error: g must be larger or equal to 0")
         if (g>=3.5): raise ValueError("Error: for g>=3.5 models are infinite")
 
+        self.model = "limepy"
+        
         # ROT
         self.omega = 0
 

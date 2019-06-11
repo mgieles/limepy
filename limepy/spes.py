@@ -140,6 +140,8 @@ class spes:
     def _set_kwargs(self, phi0, **kwargs):
         """ Set parameters and scales """
 
+        self.model = "spes"
+        
         self.phi0 = phi0
         self.B, self.C, self.eta, self.fpe = None, None, None, None
         self._MS, self._RS, self._GS = None, None, None
