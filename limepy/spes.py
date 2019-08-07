@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, absolute_import
+
 import numpy
 import scipy
 from scipy.interpolate import BPoly, interp1d, UnivariateSpline
@@ -117,25 +117,25 @@ class spes:
 
         # Optional output
         if (self.verbose):
-            print "\n Model properties: "
-            print " ----------------- "
-            print " phi0 = %5.2f; B = %12.6e; eta = %10.4e"%(self.phi0, self.B, self.eta)
-            print " fpe = %10.4e"%self.fpe
-            print " Converged = %s"%(self.converged)
+            print("\n Model properties: ")
+            print(" ----------------- ")
+            print(" phi0 = %5.2f; B = %12.6e; eta = %10.4e"%(self.phi0, self.B, self.eta))
+            print(" fpe = %10.4e"%self.fpe)
+            print(" Converged = %s"%(self.converged))
             if (self.potonly):
-                print " M = %10.3f; U = %10.4f "%(self.M, self.U)
+                print(" M = %10.3f; U = %10.4f "%(self.M, self.U))
             else:
                 pV = self.rho[self.nbound-1]*self.v2[self.nbound-1]*(4.*pi/3)*self.rt**3
                 out1 = (self.U,self.K,pV, -self.K/(self.U+3*pV))
-                print " M = %10.3e "%self.M
+                print(" M = %10.3e "%self.M)
                 frm = " U = %9.3e; K = %9.3e; p_eV_e = %9.3e; "
                 frm += "Q = -K/(U+3p_eV_e) = %5.3f "
-                print frm%out1
+                print(frm%out1)
 
             out2 = (self.rv/self.rh, self.rh/self.r0, self.rt/self.r0)
             frm = " rv/rh = %4.3f; rh/r0 = %6.3f; rt/r0 = %7.3f"
 
-            print  frm%out2
+            print(frm%out2)
 
     def _set_kwargs(self, phi0, **kwargs):
         """ Set parameters and scales """
@@ -172,7 +172,7 @@ class spes:
         # Spes specific
         self.nrt = 2
         if kwargs is not None:
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 # Check for scaling input (similar to LIMEPY)
                 if key is 'G':
                     self._GS, self.scale = value, True
@@ -230,18 +230,18 @@ class spes:
                 if self._MS is None:
                     self._MS = 1e5
                     if (self.verbose): 
-                        print " No mass-scale provided, set to default M = 1e5"
+                        print(" No mass-scale provided, set to default M = 1e5")
                 if self._RS is None:
                     self._RS, self.scale_radius = 3, 'rh'
                     if (self.verbose): 
-                        print " No radius-scale provided, set to default rh = 3"
+                        print(" No radius-scale provided, set to default rh = 3")
                 if self._GS is None:
                     self._GS = 0.004302
                     if (self.verbose): 
-                        print " No G provided, set to default: G = 0.004302"
+                        print(" No G provided, set to default: G = 0.004302")
                 if (self.verbose): 
                     vars=(self._GS, self._MS, self.scale_radius, self._RS)
-                    print " Model scaled to: G = %s, M = %s, %s = %s"%vars
+                    print(" Model scaled to: G = %s, M = %s, %s = %s"%vars)
 
 
         return
@@ -865,7 +865,7 @@ class spes:
             DF[c] *= self.A[j]
 
         else:
-	    DF = numpy.zeros(max(len(r),len(v)))
+	        DF = numpy.zeros(max(len(r),len(v)))
 
         return DF
 

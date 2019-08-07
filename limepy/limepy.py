@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, absolute_import
+
 import numpy
 import scipy
 from scipy.interpolate import BPoly, interp1d, UnivariateSpline
@@ -220,23 +220,23 @@ class limepy:
 
         # Optional output
         if (self.verbose):
-            print "\n Model properties: "
-            print " ----------------- "
-            print " phi0 = %5.2f; g = %4.2f"%(self.phi0, self.g)
-            print " Converged = %s"%(self.converged)
+            print("\n Model properties: ")
+            print(" ----------------- ")
+            print(" phi0 = %5.2f; g = %4.2f"%(self.phi0, self.g))
+            print(" Converged = %s"%(self.converged))
             if (self.potonly):
-                print " M = %10.3f; U = %10.4f "%(self.M, self.U)
+                print(" M = %10.3f; U = %10.4f "%(self.M, self.U))
             else:
                 out1 = (self.M,self.U,self.K,-self.K/self.U,2*self.Kr/self.Kt)
                 frm = " M = %10.3e; U = %9.3e; K = %9.3e; Q = %6.4f; "
                 frm += " 2Kr/Kt = %5.3f"
-                print frm%out1
+                print(frm%out1)
 
             out2 = (self.rv/self.rh, self.rh/self.r0)
             out2 += (self.rt/self.r0, self.ra/self.rh)
             frm = " rv/rh = %4.3f; rh/r0 = %6.3f; "
             frm += "rt/r0 = %7.3f; ra/rh = %7.3f"
-            print  frm%out2
+            print(frm%out2)
 
     def _set_kwargs(self, phi0, g, **kwargs):
         """ Set parameters and scales """
@@ -280,7 +280,7 @@ class limepy:
         self._interpolator_set=False
 
         if kwargs is not None:
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 # Check for scaling input
                 if key is 'G':
                     self._GS, self.scale = value, True
@@ -318,18 +318,18 @@ class limepy:
                 if self._MS is None:
                     self._MS = 1e5
                     if (self.verbose): 
-                        print " No mass-scale provided, set to default M = 1e5"
+                        print(" No mass-scale provided, set to default M = 1e5")
                 if self._RS is None:
                     self._RS, self.scale_radius = 3, 'rh'
                     if (self.verbose): 
-                        print " No radius-scale provided, set to default rh = 3"
+                        print(" No radius-scale provided, set to default rh = 3")
                 if self._GS is None:
                     self._GS = 0.004302
                     if (self.verbose): 
-                        print " No G provided, set to default: G = 0.004302"
+                        print(" No G provided, set to default: G = 0.004302")
                 if (self.verbose): 
                     vars=(self._GS, self._MS, self.scale_radius, self._RS)
-                    print " Model scaled to: G = %s, M = %s, %s = %s"%vars
+                    print(" Model scaled to: G = %s, M = %s, %s = %s"%vars)
 
             if 'mj' in kwargs and 'Mj' in kwargs:
                 self.multi=True
@@ -345,7 +345,7 @@ class limepy:
 
         self.rot = False
         if self.omega > 0:
-            print " Warning: ROTATION PART NOT FINISHED! "
+            print(" Warning: ROTATION PART NOT FINISHED! ")
             self.rot = True
         return
 
@@ -421,7 +421,7 @@ class limepy:
                    fracd, Mjit)
             frm = " %2i; ind=%3.1f; diff= %6.1e; conv= %s;"
             frm += " fdiff=%s; Mjtot=%s"
-            print  frm%out
+            print(frm%out)
 
     def _poisson(self, potonly):
         """ Solves Poisson equation """
@@ -1148,7 +1148,7 @@ class limepy:
             DF[c] *= self.A[j]
 
         else:
-	    DF = numpy.zeros(max(len(r),len(v)))
+	        DF = numpy.zeros(max(len(r),len(v)))
 
         return DF
 
