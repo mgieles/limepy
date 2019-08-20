@@ -369,13 +369,15 @@ class spes:
         self.M = sum(self._Mjtot)
         self.Mpe = -sol.y[1+self.nmbin]/self.G
         self.fpe = self.Mpe/self.M
+        
         # Save the derivative of the potential for the potential interpolater
         dphidr = numpy.sum(self._y[1:1+self.nmbin,1:],axis=0)/self.r[1:]**2
-        self.dphidrhat1 = numpy.r_[0, dphidr, -self.G*self.M/self.rt**2]
+        self.dphidrhat1 = numpy.r_[0, dphidr] 
 
         self.A = self.alpha/(2*pi*self.s2j)**1.5/self.rhoint0
 
-        self.mc = -numpy.r_[self._y[1,:], self._y[1,-1]]/self.G
+        self.mc = -self._y[1,:]/self.G
+        
 
         # Compute radii to be able to scale in case potonly=True
         self.U = self._y[2+self.nmbin,-1]  - 0.5*self.G*self.M**2/self.rt
@@ -401,13 +403,17 @@ class spes:
             # Continue to solve until rlast
             sol.set_solout(self._logcheck2)
             sol.set_f_params(potonly)
-#            print " INIT =",self._y[:,-1]
             sol.set_initial_value(self._y[:,-1],self.rt)
             sol.integrate(self.nrt*self.rt)
 
         self.rhat = self.r*1.0
         self.phihat = numpy.r_[self.phihat, self._y[0,self.nbound:]]
+        self.mc = numpy.r_[self.mc, numpy.zeros(len(self._y[0,self.nbound:])) + self.mc[-1]]
         self.phi = self.phihat*1.0
+
+        dphidr = numpy.sum(self._y[1:1+self.nmbin,self.nbound:],axis=0)/self.r[self.nbound:]**2
+        print " TTEST " ,len(self.r), len(self.phihat), len(self.mc), len(self._y[0,:]),len(self.dphidrhat1)
+        self.dphidrhat1 = numpy.r_[self.dphidrhat1, dphidr] 
 
         # Additional stuff
         if (not potonly):
