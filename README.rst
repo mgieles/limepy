@@ -31,9 +31,9 @@ Also check out LIMEPY within the browser with mybinder
 * Documentation: https://limepy.readthedocs.org. 
 
 .. image:: https://readthedocs.org/projects/limepy/badge/?version=latest
+
 :target: https://limepy.readthedocs.io/en/latest/?badge=latest
 :alt: Documentation Status
-
 
 Features
 --------
