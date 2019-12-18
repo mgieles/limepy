@@ -9,10 +9,7 @@ At the command line::
     $ python setup.py install
 
 or::
-    $ pip install -e ./ 
+    $ pip install git+https://github.com/mgieles/limepy 
 
-If you do not have root access on the machine you can do a local installation using easy_install:
+If you do not have root access, add --user to the pip install command.
  
-    $ easy_install --prefix=$HOME/mypthonpath ./
-
-Make sure that you have added the directory $HOME/mypthonpath/lib/python2.7/site-packages/ to your PYTHONPATH variable
