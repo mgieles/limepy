@@ -10,7 +10,7 @@ At the command line::
 
 or::
   
-    $ pip install git+https://github.com/mgieles/limepy 
+    $ pip install astro-limepy 
 
 If you do not have root access, add --user to the pip install command.
  
