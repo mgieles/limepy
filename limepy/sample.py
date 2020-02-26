@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import division
 import numpy
 import scipy
 from numpy import exp, sqrt, pi, sin, cos
@@ -163,7 +163,6 @@ class sample:
             else:
                 func[c] = self._Eg(E[c],g)
         if (sum(~c)>0): func[~c] = self._Eg(E[~c],g)
-
         return func
 
     def _sample_k(self, jbin):
@@ -225,7 +224,9 @@ class sample:
 
         # Assign final velocities and update r because of shuffling
         self.k = numpy.r_[self.k, xsamp**(2./3)]
-        self.v = numpy.r_[self.v, sqrt(2*xsamp**(2/3)*self.mod.s2)]
+
+        self.v = numpy.r_[self.v, sqrt(2*xsamp**(2./3)*self.mod.s2)]
+
         self.rfinal = numpy.r_[self.rfinal, r]
 
     def _pdf_angle(self, q, *args):
