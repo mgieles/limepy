@@ -20,7 +20,7 @@ class spes:
 
         This code solves the models presented in Claydon et al. 2019 (C19)
         and calculates radial profiles for some useful quantities. The 
-        models are defined by the distribution function (DF) of eq. (1) in 
+        models are defined by the distribution function (DF) of eq. (3) in 
         C19.
 
         Argument (required):
@@ -374,7 +374,7 @@ class spes:
         dphidr = numpy.sum(self._y[1:1+self.nmbin,1:],axis=0)/self.r[1:]**2
         self.dphidrhat1 = numpy.r_[0, dphidr] 
 
-        self.A = self.alpha/(2*pi*self.s2j)**1.5/self.rhoint0
+        self.A = 1/(2*pi*self.s2j)**1.5/self.rhoint0
 
         self.mc = -self._y[1,:]/self.G
         
@@ -798,39 +798,23 @@ class spes:
         space, can only be called after solving Poisson's equation
 
         Arguments can be:
-          - r, v                   (isotropic single-mass models)
-          - r, v, j                (isotropic multi-mass models)
-          - r, v, theta, j         (anisotropic models)
-          - x, y, z, vx, vy, vz, j (all models)
+          - r, v                  
+          - x, y, z, vx, vy, vz  
 
-        Here j specifies the mass bin, j=0 for single mass
         Works with scalar and array input
 
         """
 
-        if (len(arg)<2) or (len(arg)==5) or (len(arg)==6) or (len(arg)>7):
-            raise ValueError("Error: df needs 2, 3, 4 or 7 arguments")
-
-        if (len(arg)<=3) and (self.ra<self.ramax):
-            raise ValueError("Error: model is anisotropy, more input needed")
+        if (len(arg) != 2) and (len(arg) != 6):
+            print " LEN  ",len(arg)
+            raise ValueError("Error: df needs 2 or 6 arguments")
 
         if len(arg) == 2:
             r, v = (self._tonp(q) for q in arg)
-            j = 0
-
-        if len(arg) == 3:
-            r, v = (self._tonp(q) for q in arg[:-1])
-            j = arg[-1]
-
-        if len(arg) == 4:
-            r, v, theta = (self._tonp(q) for q in arg[:-1])
-            j = arg[-1]
-
-        if len(arg) < 7: r2, v2 = r**2, v**2
-
-        if len(arg) == 7:
+            r2, v2 = r**2, v**2
+            
+        if len(arg) == 6:
             x, y, z, vx, vy, vz = (self._tonp(q) for q in arg[:-1])
-            j = arg[-1]
             r2 = x**2 + y**2 + z**2
             v2 = vx**2 + vy**2 + vz**2
             r, v = sqrt(r2), sqrt(v2)
@@ -855,23 +839,16 @@ class spes:
             c = (r<self.rt) & (numpy.zeros(len(r))+v2<vesc2)
 
         if (sum(c)>0):
-            # Compute the DF: equation (1), GZ15
-
-            E = (phi-0.5*v2)/self.s2j[j]  # Dimensionless positive energy
-            DF[c] = exp(E[c])
-
-            if (self.g>0): DF[c] *= gammainc(self.g, E[c])
-
-            if (len(arg)==7): J2 = v2*r2 - (x*vx + y*vy + z*vz)**2
-            if (len(arg)==4): J2 = sin(theta)**2*v2*r2
-            if (len(arg)<=3): J2 = numpy.zeros(len(c))
-
-            DF[c] *= exp(-J2[c]/(2*self.raj[j]**2*self.s2j[j]))
-
-            DF[c] *= self.A[j]
-
+            # Scaled energy
+            E = (phi-0.5*v2)/self.s2
+            
+            # Compute the DF: eq. (3) in C19
+            DF[c] = exp(E[c]) - self.B - self.C*E[c]
+            DF[~c] = (1-self.B)*exp(E[~c]/self.eta**2)
+            
+            DF *= self.A
         else:
-	        DF = numpy.zeros(max(len(r),len(v)))
+	    DF = numpy.zeros(max(len(r),len(v)))
 
         return DF
 

@@ -7,12 +7,12 @@ except ImportError:
     from distutils.core import setup, Extension
 
 from os import path
-
-readme = open('README.rst').read()
-history = open('HISTORY.rst').read().replace('.. :changelog:', '')
+import io
+readme = io.open('README.rst').read()
+history = io.open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
+with io.open(path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 requirements = ['numpy', 'scipy>=0.14.0']
