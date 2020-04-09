@@ -412,7 +412,6 @@ class spes:
         self.phi = self.phihat*1.0
 
         dphidr = numpy.sum(self._y[1:1+self.nmbin,self.nbound:],axis=0)/self.r[self.nbound:]**2
-#        print " TTEST " ,len(self.r), len(self.phihat), len(self.mc), len(self._y[0,:]),len(self.dphidrhat1)
         self.dphidrhat1 = numpy.r_[self.dphidrhat1, dphidr] 
 
         # Additional stuff
@@ -806,7 +805,6 @@ class spes:
         """
 
         if (len(arg) != 2) and (len(arg) != 6):
-            print " LEN  ",len(arg)
             raise ValueError("Error: df needs 2 or 6 arguments")
 
         if len(arg) == 2:
