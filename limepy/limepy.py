@@ -89,6 +89,7 @@ class limepy:
 
         Projected models:
         -----------------
+         rhp : half-mass radius in projection (rhp ~ 0.75 rh)
          Sigma : surface (mass) density
          v2p : line-of-sight mean-square velocity
          v2R, v2T : radial and tangential component of mean-square velocity
@@ -507,7 +508,7 @@ class limepy:
         drdm = 1./(4*pi*self.r[ih:ih+2]**2*rhotmp)
         rmc_and_derivs = numpy.vstack([[self.r[ih:ih+2]],[drdm]]).T
 
-        self.rh = BPoly.from_derivatives(self.mc[ih:ih+2], rmc_and_derivs)(0.5*self.mc[-1])
+        self.rh = BPoly.from_derivatives(self.mc[ih:ih+2], rmc_and_derivs)(0.5*self.mc[-1])[0]
         self.rv = -0.5*self.G*self.M**2/self.U
 
         # Additional stuff
