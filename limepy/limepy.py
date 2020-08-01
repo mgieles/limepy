@@ -508,7 +508,7 @@ class limepy:
         drdm = 1./(4*pi*self.r[ih:ih+2]**2*rhotmp)
         rmc_and_derivs = numpy.vstack([[self.r[ih:ih+2]],[drdm]]).T
 
-        self.rh = BPoly.from_derivatives(self.mc[ih:ih+2], rmc_and_derivs)(0.5*self.mc[-1])[0]
+        self.rh = BPoly.from_derivatives(self.mc[ih:ih+2], rmc_and_derivs)(0.5*self.mc[-1])
         self.rv = -0.5*self.G*self.M**2/self.U
 
         # Additional stuff
