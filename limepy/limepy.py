@@ -386,8 +386,8 @@ class limepy:
         """
 
         self.multi=True
-        self.mj = numpy.array(mj)
-        self.Mj = numpy.array(Mj)
+        self.mj = numpy.array(mj)*1.0
+        self.Mj = numpy.array(Mj)*1.0
         self.nmbin = len(mj)
 
         # Set trial value for alpha_j array, will be updated in iterations
@@ -451,6 +451,7 @@ class limepy:
         GM = -self.G*sum(sol.y[1:1+self.nmbin])
         p = 2*sol.y[0]*self.r[-1]/GM
 
+#        print(" TEST ",sol.y)
         if (p<=0.5):
             rtfac = (1 - sqrt(1-2*p))/p
             self.rt = rtfac*self.r[-1] if (rtfac > 1) else 1.0000001*self.r[-1]
@@ -681,7 +682,7 @@ class limepy:
             for j in range(self.nmbin):
                 phi = y[0]/self.s2j[j]
                 derivs.append(-9.0*x**2*self.alpha[j]*self._rhohat(phi, x, j))
-
+#            print(" DERIVS = ",x,derivs,self.nmbin)
             dUdx  = 2.0*pi*numpy.sum(derivs[1:1+self.nmbin])*y[0]/9.
         else:
             derivs = [y[1]/x**2] if (x>0) else [0]
@@ -896,7 +897,8 @@ class limepy:
             v2pj = numpy.zeros((self.nmbin, self.nstep))
             v2Rj = numpy.zeros((self.nmbin, self.nstep))
             v2Tj = numpy.zeros((self.nmbin, self.nstep))
-            mcpj = numpy.zeros((self.nmbin, self.nstep)) # TBD
+            mcpj = numpy.zeros((self.nmbin, self.nstep))
+            rhpj = numpy.zeros((self.nmbin)) 
 
         # Project model properties for each R
         for i in range(self.nstep-1):
@@ -924,14 +926,15 @@ class limepy:
             if (i>0):
                 x = self.r[i-1:i+1]
                 mcp[i] = mcp[i-1] + 2*pi*simps(x*Sigma[i-1:i+1], x=x)
-            mcp[-1] = mcp[-2]
 
-            # Radius containing half the mass in projection
-            self.rhp = numpy.interp(0.5*mcp[-1], mcp, self.r)
 
             if (self.multi):
                 for j in range(self.nmbin):
                     Sigmaj[j,i] = 2.0*simps(self.rhoj[j,c], x=z)
+                    if (i>0):
+                        x = self.r[i-1:i+1]
+                        mcpj[j,i] = mcpj[j,i-1] + 2*pi*simps(x*Sigmaj[j,i-1:i+1], x=x)
+                    
                     if (i==0):
                         betaterm1 = 1
                         betaterm2 = 1 -self.betaj[j,c]
@@ -951,17 +954,28 @@ class limepy:
                     v2Tj[j,i] = abs(simps(self.rhoj[j,c]*self.v2tj[j,c], x=z))
                     v2Tj[j,i] /= Sigmaj[j,i]
 
+
+        # Radius containing half the mass in projection
+        x = self.r[-2:]
+        mcp[-1] = mcp[-2] + 2*pi*simps(x*Sigma[-2:], x=x)
+        self.rhp = numpy.interp(0.5*mcp[-1], mcp, self.r)
+
+        if (self.multi):
+            x = self.r[-2:]
+            for j in range(self.nmbin):
+                mcpj[j,-1] = mcpj[j,-2] + 2*pi*simps(x*Sigmaj[j,-2:], x=x)
+                rhpj[j] = numpy.interp(0.5*mcpj[j,-1], mcpj[j], self.r)
+
+        # Save values
         self.R, self.Sigma = R, Sigma
         self.v2p, self.v2R, self.v2T = v2p, v2R, v2T
         self.mcp = mcp
 
-        # TBD: Compute half-mass radii in projection 
-
         if (self.multi):
             self.Sigmaj = Sigmaj
             self.v2pj, self.v2Rj, self.v2Tj =  v2pj, v2Rj, v2Tj
-
-
+            self.mcpj = mcpj
+            self.rhpj = rhpj
         return
         
     def get_Paz(self, az_data, R_data, jns):
