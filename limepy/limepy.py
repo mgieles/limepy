@@ -426,7 +426,7 @@ class limepy:
 
     def _poisson(self, potonly):
         """ Solves Poisson equation """
-        # y = [phi, u_j, U, K_j], where u = -M(<r)/G
+        # y = [phi, u_j, U, K_j], where u = -M(<r)/G # 
 
         # Initialize
         self.r = numpy.array([0])

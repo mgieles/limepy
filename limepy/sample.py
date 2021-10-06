@@ -132,7 +132,6 @@ class sample:
 
         self.r = self.rfinal
         self.phihat = m.interp_phi(self.r)/m.s2
-
         self.phi = -self.phihat*m.s2 - m.G*m.M/m.rt
 
         self._sample_angles(self.N)
@@ -189,7 +188,6 @@ class sample:
         if self.mod.multi:
             c = numpy.zeros(self.Nj[jbin], dtype='bool')+True
 
-
         while (sum(c) > 0):
             nc = sum(c)
 
@@ -222,11 +220,15 @@ class sample:
                 r = numpy.r_[r, rtmp[~c]]
             iter+=1
 
+        # Shuffle before assigning to avoid correlations (6/10/21)
+        id = numpy.arange(len(r))
+        numpy.random.shuffle(id)
+        xsamp = xsamp[id]
+        r = r[id]
+            
         # Assign final velocities and update r because of shuffling
         self.k = numpy.r_[self.k, xsamp**(2./3)]
-
         self.v = numpy.r_[self.v, sqrt(2*xsamp**(2./3)*self.mod.s2)]
-
         self.rfinal = numpy.r_[self.rfinal, r]
 
     def _pdf_angle(self, q, *args):
@@ -260,6 +262,7 @@ class sample:
     def _to_cartesian(self):
         if (self.verbose): print(" convert to cartesian coordinates ...")
         r = self.r
+        
         r2 = r**2
         R1 = random.rand(self.N)
         R2 = random.rand(self.N)
