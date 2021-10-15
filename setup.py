@@ -23,7 +23,7 @@ test_requirements = [
 
 setup(
     name='astro-limepy',
-    version='0.1.1',
+    version='1.1',
     description='Code to solve lowered isothermal model',
     long_description=long_description + "\n\n" + history,
     long_description_content_type='text/x-rst',
