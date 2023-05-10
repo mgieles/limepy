@@ -245,6 +245,8 @@ class limepy:
         if (g<0): raise ValueError("Error: g must be larger or equal to 0")
         if (g>=3.5): raise ValueError("Error: for g>=3.5 models are infinite")
 
+        if (phi0<=0): raise ValueError("Error: phi0 must be larger than 0")
+
         self.model = "limepy"
         
         # ROT
@@ -451,7 +453,6 @@ class limepy:
         GM = -self.G*sum(sol.y[1:1+self.nmbin])
         p = 2*sol.y[0]*self.r[-1]/GM
 
-#        print(" TEST ",sol.y)
         if (p<=0.5):
             rtfac = (1 - sqrt(1-2*p))/p
             self.rt = rtfac*self.r[-1] if (rtfac > 1) else 1.0000001*self.r[-1]
@@ -682,7 +683,6 @@ class limepy:
             for j in range(self.nmbin):
                 phi = y[0]/self.s2j[j]
                 derivs.append(-9.0*x**2*self.alpha[j]*self._rhohat(phi, x, j))
-#            print(" DERIVS = ",x,derivs,self.nmbin)
             dUdx  = 2.0*pi*numpy.sum(derivs[1:1+self.nmbin])*y[0]/9.
         else:
             derivs = [y[1]/x**2] if (x>0) else [0]
@@ -1166,4 +1166,5 @@ class limepy:
 	        DF = numpy.zeros(max(len(r),len(v)))
 
         return DF
+
 
