@@ -4,7 +4,7 @@ import numpy
 import scipy
 from numpy import exp, sqrt, pi, sin, cos
 from scipy.special import  gammainc, dawsn, erfi
-from scipy import random
+from numpy import random
 from scipy import optimize
 from math import factorial
 
@@ -222,7 +222,7 @@ class sample:
 
         # Shuffle before assigning to avoid correlations (6/10/21)
         id = numpy.arange(len(r))
-        numpy.random.shuffle(id)
+        random.shuffle(id)
         xsamp = xsamp[id]
         r = r[id]
             
