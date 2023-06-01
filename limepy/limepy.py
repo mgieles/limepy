@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 
 import numpy
@@ -285,29 +286,29 @@ class limepy:
         if kwargs is not None:
             for key, value in kwargs.items():
                 # Check for scaling input
-                if key is 'G':
+                if key == 'G':
                     self._GS, self.scale = value, True
-                elif key is 'M':
+                elif key == 'M':
                     self._MS, self.scale = value, True
-                elif key is 'r0':
+                elif key == 'r0':
                     if self.scale_radius is None:
                         self._RS,self.scale_radius,self.scale = value,'r0', True
                     else:
                         error="Can not set scale radius to r0,already set to %s"
                         raise ValueError(error%self.scale_radius)
-                elif key is 'rh':
+                elif key == 'rh':
                     if self.scale_radius is None:
                         self._RS, self.scale_radius, self.scale=value,'rh', True
                     else:
                         error="Can not set scale radius to rh,already set to %s"
                         raise ValueError(error%self.scale_radius)
-                elif key is 'rv':
+                elif key == 'rv':
                     if self.scale_radius is None:
                         self._RS, self.scale_radius, self.scale=value,'rv', True
                     else:
                         error="Can not set scale radius to rv,already set to %s"
                         raise ValueError(error%self.scale_radius)
-                elif key is 'rt':
+                elif key == 'rt':
                     if self.scale_radius is None:
                         self._RS, self.scale_radius, self.scale=value,'rt', True
                     else:
@@ -682,11 +683,11 @@ class limepy:
             derivs = [numpy.sum(y[1:1+self.nmbin])/x**2] if (x>0) else [0]
             for j in range(self.nmbin):
                 phi = y[0]/self.s2j[j]
-                derivs.append(-9.0*x**2*self.alpha[j]*self._rhohat(phi, x, j))
+                derivs.append(-9.0*x**2*self.alpha[j]*self._rhohat(phi, x, j)[0])
             dUdx  = 2.0*pi*numpy.sum(derivs[1:1+self.nmbin])*y[0]/9.
         else:
             derivs = [y[1]/x**2] if (x>0) else [0]
-            derivs.append(-9.0*x**2*self._rhohat(y[0], x, 0))
+            derivs.append(-9.0*x**2*self._rhohat(y[0], x, 0)[0])
 
             dUdx  = 2.0*pi*derivs[1]*y[0]/9.
 
@@ -712,6 +713,7 @@ class limepy:
 
         dVdvdr = (4*pi)**2*x**2 * (2*y[0])**1.5/3 if (x>0) and (y[0]>0) else 0
         derivs.append(dVdvdr)
+#        print("TEST",derivs)
         return derivs
 
     
@@ -1168,3 +1170,4 @@ class limepy:
         return DF
 
 
+k=limepy(4,1,project=True,M=1,G=1,rv=1,mj=[0.1,1],Mj=[1,0.1],verbose=True)
