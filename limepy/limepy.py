@@ -1170,4 +1170,4 @@ class limepy:
         return DF
 
 
-k=limepy(4,1,project=True,M=1,G=1,rv=1,mj=[0.1,1],Mj=[1,0.1],verbose=True)
+#k=limepy(4,1,project=True,M=1,G=1,rv=1,mj=[0.1,1],Mj=[1,0.1],verbose=True)
