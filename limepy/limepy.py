@@ -862,6 +862,7 @@ class limepy:
                 self.Mj *= Mstar # 28/1/19 Thanks to William
 
                 self.mcj *= Mstar
+                self.r0j *= Rstar
                 self.rhj *= Rstar
                 self.v2j,self.v2rj,self.v2tj=(q*v2star for q in
                                               [self.v2j, self.v2rj,self.v2tj])
@@ -1170,4 +1171,4 @@ class limepy:
         return DF
 
 
-#k=limepy(4,1,project=True,M=1,G=1,rv=1,mj=[0.1,1],Mj=[1,0.1],verbose=True)
+###k=limepy(4,1,project=True,M=1,G=1,rv=1,mj=[0.1,1],Mj=[1,0.1],verbose=True)
