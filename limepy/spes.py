@@ -5,7 +5,7 @@ import scipy
 from scipy.interpolate import BPoly, interp1d, UnivariateSpline
 from numpy import exp, sqrt, pi, sin, cos, log10
 from scipy.special import gamma, gammainc, gammaincc, hyp1f1
-from scipy.integrate import ode, simps
+from scipy.integrate import ode, simpson
 from math import factorial, sinh
 
 #     Authors: Mark Gieles & Ian Clayon (Surrey 2018)
@@ -653,8 +653,8 @@ class spes:
             c = (self.r >= R[i])
             r = self.r[c]
             z = sqrt(abs(r**2 - R[i]**2)) # avoid small neg. values
-            Sigma[i] = 2.0*abs(simps(self.rho[c], x=z))
-            v2p[i] = abs(2.0*simps(self.rho[c]*self.v2[c]/3., x=z))
+            Sigma[i] = 2.0*abs(simpson(self.rho[c], x=z))
+            v2p[i] = abs(2.0*simpson(self.rho[c]*self.v2[c]/3., x=z))
             v2p[i] /= Sigma[i]
 
             v2R[i] = v2p[i]
@@ -663,7 +663,7 @@ class spes:
             # Cumulative mass in projection
             if (i>0):
                 x = self.r[i-1:i+1]
-                mcp[i] = mcp[i-1] + 2*pi*simps(x*Sigma[i-1:i+1], x=x)
+                mcp[i] = mcp[i-1] + 2*pi*simpson(x*Sigma[i-1:i+1], x=x)
             mcp[-1] = mcp[-2]
 
             # Radius containing half the mass in projection
