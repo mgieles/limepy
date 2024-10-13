@@ -6,7 +6,7 @@ import scipy
 from scipy.interpolate import BPoly, interp1d, UnivariateSpline
 from numpy import exp, sqrt, pi, sin, cos, log10
 from scipy.special import gamma, gammainc, hyp1f1
-from scipy.integrate import ode, simps, quad
+from scipy.integrate import ode, simpson, quad
 from math import factorial, sinh
 
 #     Authors: Mark Gieles, Alice Zocchi (Surrey 2015)
@@ -757,7 +757,7 @@ class limepy:
                 Ul = numpy.zeros(len(self.theta))
                 for it in range(self.ntheta):
                     Ul[it] = self.legendre_Ul(l, self.theta[it])
-                rho_l[ir][il] = -2.0 * simps(self.rhon_g[ir]*Ul, x=cos(self.theta))
+                rho_l[ir][il] = -2.0 * simpson(self.rhon_g[ir]*Ul, x=cos(self.theta))
         
         return rho_l
 
@@ -908,34 +908,34 @@ class limepy:
             r = self.r[c]
             z = sqrt(abs(r**2 - R[i]**2)) # avoid small neg. values
 
-            Sigma[i] = 2.0*abs(simps(self.rho[c], x=z))
+            Sigma[i] = 2.0*abs(simpson(self.rho[c], x=z))
 
             betaterm1 = 1 if i==0 else 1-self.beta[c]*R[i]**2/self.r[c]**2
 
             # eq 41 in paper has a small mistake:  (1-R^2)/r^2 should be (1-R^2/r^2) as below
             betaterm2 = 1 - self.beta[c] if i==0 else 1-self.beta[c]*(1-R[i]**2/self.r[c]**2)
 
-            v2p[i] = abs(2.0*simps(betaterm1*self.rho[c]*self.v2r[c], x=z))
+            v2p[i] = abs(2.0*simpson(betaterm1*self.rho[c]*self.v2r[c], x=z))
             v2p[i] /= Sigma[i]
 
-            v2R[i] = abs(2.0*simps(betaterm2*self.rho[c]*self.v2r[c], x=z))
+            v2R[i] = abs(2.0*simpson(betaterm2*self.rho[c]*self.v2r[c], x=z))
             v2R[i] /= Sigma[i]
 
-            v2T[i] = abs(simps(self.rho[c]*self.v2t[c], x=z))
+            v2T[i] = abs(simpson(self.rho[c]*self.v2t[c], x=z))
             v2T[i] /= Sigma[i]
 
             # Cumulative mass in projection
             if (i>0):
                 x = self.r[i-1:i+1]
-                mcp[i] = mcp[i-1] + 2*pi*simps(x*Sigma[i-1:i+1], x=x)
+                mcp[i] = mcp[i-1] + 2*pi*simpson(x*Sigma[i-1:i+1], x=x)
 
 
             if (self.multi):
                 for j in range(self.nmbin):
-                    Sigmaj[j,i] = 2.0*simps(self.rhoj[j,c], x=z)
+                    Sigmaj[j,i] = 2.0*simpson(self.rhoj[j,c], x=z)
                     if (i>0):
                         x = self.r[i-1:i+1]
-                        mcpj[j,i] = mcpj[j,i-1] + 2*pi*simps(x*Sigmaj[j,i-1:i+1], x=x)
+                        mcpj[j,i] = mcpj[j,i-1] + 2*pi*simpson(x*Sigmaj[j,i-1:i+1], x=x)
                     
                     if (i==0):
                         betaterm1 = 1
@@ -945,27 +945,27 @@ class limepy:
                         # eq 41 in paper has a small mistake:  (1-R^2)/r^2 should be (1-R^2/r^2) as below
                         betaterm2 = 1-self.betaj[j,c]*(1-R[i]**2/self.r[c]**2)
 
-                    v2int = simps(betaterm1*self.rhoj[j,c]*self.v2rj[j,c], x=z)
+                    v2int = simpson(betaterm1*self.rhoj[j,c]*self.v2rj[j,c], x=z)
                     v2pj[j,i] = abs(2.0*v2int)
                     v2pj[j,i] /= Sigmaj[j,i]
 
-                    v2int = simps(betaterm2*self.rhoj[j,c]*self.v2rj[j,c], x=z)
+                    v2int = simpson(betaterm2*self.rhoj[j,c]*self.v2rj[j,c], x=z)
                     v2Rj[j,i] = abs(2.0*v2int)
                     v2Rj[j,i] /= Sigmaj[j,i]
 
-                    v2Tj[j,i] = abs(simps(self.rhoj[j,c]*self.v2tj[j,c], x=z))
+                    v2Tj[j,i] = abs(simpson(self.rhoj[j,c]*self.v2tj[j,c], x=z))
                     v2Tj[j,i] /= Sigmaj[j,i]
 
 
         # Radius containing half the mass in projection
         x = self.r[-2:]
-        mcp[-1] = mcp[-2] + 2*pi*simps(x*Sigma[-2:], x=x)
+        mcp[-1] = mcp[-2] + 2*pi*simpson(x*Sigma[-2:], x=x)
         self.rhp = numpy.interp(0.5*mcp[-1], mcp, self.r)
 
         if (self.multi):
             x = self.r[-2:]
             for j in range(self.nmbin):
-                mcpj[j,-1] = mcpj[j,-2] + 2*pi*simps(x*Sigmaj[j,-2:], x=x)
+                mcpj[j,-1] = mcpj[j,-2] + 2*pi*simpson(x*Sigmaj[j,-2:], x=x)
                 rhpj[j] = numpy.interp(0.5*mcpj[j,-1], mcpj[j], self.r)
 
         # Save values

@@ -1,0 +1,38 @@
+[project]
+name = "astro-limepy"
+version = "1.2.1"
+description = "Code to solve lowered isothermal model"
+authors = [
+    {name = "Mark Gieles", email = "m.gieles@surrey.ac.uk"},
+    {name = "Alice Zocchi", email = "a.zocchi@surrey.ac.uk"},
+]
+readme = "README.rst"
+requires-python = ">=3.8"
+keywords = ["limepy"]
+license = {file = "LICENSE"}
+dependencies = [
+    "numpy",
+    "scipy",
+]
+
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Programming Language :: Python",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Astronomy",
+]
+
+# [project.optional-dependencies]
+# test = ["pytest"]
+
+[project.urls]
+documentation = "https://limepy.readthedocs.org"
+repository = "https://github.com/mgieles/limepy"
+
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["limepy"]
