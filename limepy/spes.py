@@ -847,6 +847,5 @@ class spes:
             DF *= self.A
         else:
             DF = numpy.zeros(max(len(r),len(v)))
-
         return DF
 
