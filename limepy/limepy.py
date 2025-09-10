@@ -268,7 +268,7 @@ class limepy:
         self.mf_iter_index = 0.5
         self.ode_atol = 1e-7
         self.ode_rtol = 1e-7
-        self.nmbin, self.delta, self.eta = 1, 0.5, 0.0
+        self.nmbin, self.delta, self.eta, self.meq = 1, 0.5, 0.0, 0.0
 
         self.G = 9.0/(4.0*pi)
         self.mu, self.alpha = numpy.array([1.0]), numpy.array([1.0])
@@ -371,7 +371,8 @@ class limepy:
         else:
             raise ValueError(" meanmass must be 'global' or 'central'")
 
-        self.mu = self.mj/self.mmean
+        self.mu = (self.mj+self.meq) / self.mmean
+        # self.mu = self.mj/self.mmean
         self.s2j = self.mu**(-2*self.delta)         # equation (24) GZ15
         self.raj = self.ra*self.mu**self.eta        # equation (25) GZ15
 
