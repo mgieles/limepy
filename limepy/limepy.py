@@ -270,6 +270,8 @@ class limepy:
         self.ode_rtol = 1e-7
         self.nmbin, self.delta, self.eta, self.meq = 1, 0.5, 0.0, 0.0
 
+        self.zeta_lim, self.zeta = 3.0, 1.0
+
         self.G = 9.0/(4.0*pi)
         self.mu, self.alpha = numpy.array([1.0]), numpy.array([1.0])
         self.s2 = 1.0
@@ -374,6 +376,10 @@ class limepy:
         self.mu = (self.mj+self.meq) / self.mmean
         # self.mu = self.mj/self.mmean
         self.s2j = self.mu**(-2*self.delta)         # equation (24) GZ15
+
+        # Add an extra scale factor for massive objects to help "decouple"
+        self.s2j[self.mj > self.zeta_lim] *= self.zeta
+
         self.raj = self.ra*self.mu**self.eta        # equation (25) GZ15
 
         self.phi0j = self.phi0/self.s2j
