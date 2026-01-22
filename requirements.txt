@@ -1,4 +1,4 @@
-wheel==0.38.1
+wheel==0.46.2
 numpy
 scipy>=0.14.0
 sphinx>=1.8.4
