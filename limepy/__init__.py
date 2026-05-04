@@ -2,7 +2,7 @@
 
 __author__ = 'Mark Gieles, Alice Zocchi'
 __email__ = 'm.gieles@surrey.ac.uk, a.zocchi@surrey.ac.uk'
-__version__ = '1.2.1'
+__version__ = '1.3.0'
 
 from .limepy import limepy
 from .sample import sample
