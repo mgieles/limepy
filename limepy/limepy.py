@@ -32,17 +32,24 @@ class limepy:
           Order of truncation (0<= g < 3.5; 0=Woolley, 1=King, 2=Wilson)
 
         ra : scalar, required for anisotropic models
-           Anisotropy radius; default=1e8
+            Anisotropy radius; default=1e8
         mj : list, required for multi-mass system
-           Mean mass of each component; default=None
+            Mean mass of each component; default=None
         Mj : list, required for multi-mass system
-           Total mass of each component; default=None
+            Total mass of each component; default=None
         delta : scalar, optional
-              Index in s_j = s x mu_j^-delta; default=0.5
-              See equation (24) in GZ15
+            Index in s_j = s x mu_j^-delta; default=0.5
+            See equation (24) in GZ15
+        meq : scalar, optional
+            Characteristic equipartition mass, used in defining
+            mu_j = (m_j + m_eq) / <m>; default=0.
         eta : scalar, optional
-            Index in ra_j = ra x mu_j^eta; default=0
+            Index in ra_j = ra x mu_j^eta; default=0.
             See equation (25) in GZ15
+        zeta : scalar, optional
+            Extra scaling term which scales the value of s^2_j for all masses
+            above 'zeta_lim', to force the "decoupling" of these masses from
+            the rest; default=1.0
 
         Input for scaling:
         ==================
