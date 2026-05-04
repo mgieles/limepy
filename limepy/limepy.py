@@ -60,7 +60,16 @@ class limepy:
         project : bool, optional
                 Compute model properties in projection; default=False
         meanmassdef : string [global|central]
-                    Definition of <m> in mu_j = m_j/<m>; default='global'
+                Definition of <m> in mu_j = m_j/<m>; default='global'
+        diffdef : string [mse|rel]
+                Definition of the stopping criterion. 'mse' computes the
+                overall mean-squared error, while 'rel' checks the relative
+                error in each bin individually; default='mse'
+        diffcrit : float
+                Stopping criterion for the mass function iteration.
+                Note that if diffdef='rel', `diffcrit` will represent the
+                fractional error in each bin, and should be increased.
+                default=1e-8
         potonly : bool, optional
                 Fast solution by solving potential only; default=False
         max_step : scalar, optional
@@ -249,7 +258,7 @@ class limepy:
         if (phi0<=0): raise ValueError("Error: phi0 must be larger than 0")
 
         self.model = "limepy"
-        
+
         # ROT
         self.omega = 0
 
@@ -262,6 +271,7 @@ class limepy:
         self.maxr = 1e10
         self.max_step = self.maxr
         self.diffcrit = 1e-8
+        self.diffdef = 'mse'
         self.max_arg_exp = 700  # Maximum argument for exponent and hyp1f1 func
         self.max_mf_iter = 100  # Maximum number of iterations to find rho0j
         self.minimum_phi = 1e-8 # Stop criterion for integrator
@@ -353,6 +363,12 @@ class limepy:
         if self.omega > 0:
             print(" Warning: ROTATION PART NOT FINISHED! ")
             self.rot = True
+
+        if (self.diffdef == 'rel') and (self.diffcrit < 1e-5):
+            print('Warning: You are setting a stopping criterion of a per-bin '
+                  f'error of less than {self.diffcrit}. '
+                  'Did you mean to use `diffdef=mse`?')
+
         return
 
     def _logcheck(self, t, y):
@@ -417,8 +433,18 @@ class limepy:
         self.alpha/=sum(self.alpha)
 
         self._set_mass_function_variables()
-        self.diff = sum((self._Mjtot/sum(self._Mjtot) -
-                         self.Mj/sum(self.Mj))**2)/len(self._Mjtot)
+
+        Mj_norm_out = self._Mjtot/sum(self._Mjtot)
+
+        if self.diffdef.lower() == 'mse':
+            self.diff = sum((Mj_norm_out - self.Mj/sum(self.Mj))**2)/len(self._Mjtot)
+
+        elif self.diffdef.lower() == 'rel':
+            self.diff = max(abs((Mj_norm_out * (self.Mj.sum() / self.Mj)) - 1))
+
+        else:
+            raise ValueError("Invalid diffdef, must be 'mse' or 'rel'")
+
         self.niter+=1
         self.nstep=1
         if (self.verbose):
