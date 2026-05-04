@@ -382,11 +382,15 @@ class limepy:
     def _set_mass_function_variables(self):
         """ Multi-mass models: Set properties for each mass bin """
 
+        Nj = self.Mj/self.mj
+        self._mmean_global = sum(self.Mj/sum(Nj))
+
+        self._mmean_central = sum(self.mj*self.alpha)    # equation (26) GZ15
+
         if self.meanmassdef=='global':
-            Nj = self.Mj/self.mj
-            self.mmean = sum(self.Mj/sum(Nj))        
+            self.mmean = self._mmean_global
         elif self.meanmassdef=='central':
-            self.mmean = sum(self.mj*self.alpha)    # equation (26) GZ15
+            self.mmean = self._mmean_central
         else:
             raise ValueError(" meanmass must be 'global' or 'central'")
 
