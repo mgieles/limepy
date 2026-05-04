@@ -268,6 +268,7 @@ class limepy:
         self.scale = False
         self.project = False
         self.meanmassdef='global'
+        self.ode_method = 'dopri5'
         self.maxr = 1e10
         self.max_step = self.maxr
         self.diffcrit = 1e-8
@@ -474,7 +475,7 @@ class limepy:
         # (Hairor, Norsett& Wanner 1993)
         max_step = self.maxr if (potonly) else self.max_step
         sol = ode(self._odes)
-        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,
+        sol.set_integrator(self.ode_method,nsteps=1e6,max_step=max_step,
                            atol=self.ode_atol,rtol=self.ode_rtol)
         sol.set_solout(self._logcheck)
         sol.set_f_params(potonly)
