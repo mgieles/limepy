@@ -32,17 +32,24 @@ class limepy:
           Order of truncation (0<= g < 3.5; 0=Woolley, 1=King, 2=Wilson)
 
         ra : scalar, required for anisotropic models
-           Anisotropy radius; default=1e8
+            Anisotropy radius; default=1e8
         mj : list, required for multi-mass system
-           Mean mass of each component; default=None
+            Mean mass of each component; default=None
         Mj : list, required for multi-mass system
-           Total mass of each component; default=None
+            Total mass of each component; default=None
         delta : scalar, optional
-              Index in s_j = s x mu_j^-delta; default=0.5
-              See equation (24) in GZ15
+            Index in s_j = s x mu_j^-delta; default=0.5
+            See equation (24) in GZ15
+        meq : scalar, optional
+            Characteristic equipartition mass, used in defining
+            mu_j = (m_j + m_eq) / <m>; default=0.
         eta : scalar, optional
-            Index in ra_j = ra x mu_j^eta; default=0
+            Index in ra_j = ra x mu_j^eta; default=0.
             See equation (25) in GZ15
+        zeta : scalar, optional
+            Extra scaling term which scales the value of s^2_j for all masses
+            above 'zeta_lim', to force the "decoupling" of these masses from
+            the rest; default=1.0
 
         Input for scaling:
         ==================
@@ -60,7 +67,16 @@ class limepy:
         project : bool, optional
                 Compute model properties in projection; default=False
         meanmassdef : string [global|central]
-                    Definition of <m> in mu_j = m_j/<m>; default='global'
+                Definition of <m> in mu_j = m_j/<m>; default='global'
+        diffdef : string [mse|rel]
+                Definition of the stopping criterion. 'mse' computes the
+                overall mean-squared error, while 'rel' checks the relative
+                error in each bin individually; default='mse'
+        diffcrit : float
+                Stopping criterion for the mass function iteration.
+                Note that if diffdef='rel', `diffcrit` will represent the
+                fractional error in each bin, and should be increased.
+                default=1e-8
         potonly : bool, optional
                 Fast solution by solving potential only; default=False
         max_step : scalar, optional
@@ -249,7 +265,7 @@ class limepy:
         if (phi0<=0): raise ValueError("Error: phi0 must be larger than 0")
 
         self.model = "limepy"
-        
+
         # ROT
         self.omega = 0
 
@@ -259,16 +275,20 @@ class limepy:
         self.scale = False
         self.project = False
         self.meanmassdef='global'
+        self.ode_method = 'dopri5'
         self.maxr = 1e10
         self.max_step = self.maxr
         self.diffcrit = 1e-8
+        self.diffdef = 'mse'
         self.max_arg_exp = 700  # Maximum argument for exponent and hyp1f1 func
         self.max_mf_iter = 100  # Maximum number of iterations to find rho0j
         self.minimum_phi = 1e-8 # Stop criterion for integrator
         self.mf_iter_index = 0.5
         self.ode_atol = 1e-7
         self.ode_rtol = 1e-7
-        self.nmbin, self.delta, self.eta = 1, 0.5, 0.0
+        self.nmbin, self.delta, self.eta, self.meq = 1, 0.5, 0.0, 0.0
+
+        self.zeta_lim, self.zeta = 3.0, 1.0
 
         self.G = 9.0/(4.0*pi)
         self.mu, self.alpha = numpy.array([1.0]), numpy.array([1.0])
@@ -351,6 +371,12 @@ class limepy:
         if self.omega > 0:
             print(" Warning: ROTATION PART NOT FINISHED! ")
             self.rot = True
+
+        if (self.diffdef == 'rel') and (self.diffcrit < 1e-5):
+            print('Warning: You are setting a stopping criterion of a per-bin '
+                  f'error of less than {self.diffcrit}. '
+                  'Did you mean to use `diffdef=mse`?')
+
         return
 
     def _logcheck(self, t, y):
@@ -363,16 +389,25 @@ class limepy:
     def _set_mass_function_variables(self):
         """ Multi-mass models: Set properties for each mass bin """
 
+        Nj = self.Mj/self.mj
+        self._mmean_global = sum(self.Mj/sum(Nj))
+
+        self._mmean_central = sum(self.mj*self.alpha)    # equation (26) GZ15
+
         if self.meanmassdef=='global':
-            Nj = self.Mj/self.mj
-            self.mmean = sum(self.Mj/sum(Nj))        
+            self.mmean = self._mmean_global
         elif self.meanmassdef=='central':
-            self.mmean = sum(self.mj*self.alpha)    # equation (26) GZ15
+            self.mmean = self._mmean_central
         else:
             raise ValueError(" meanmass must be 'global' or 'central'")
 
-        self.mu = self.mj/self.mmean
+        self.mu = (self.mj+self.meq) / self.mmean
+        # self.mu = self.mj/self.mmean
         self.s2j = self.mu**(-2*self.delta)         # equation (24) GZ15
+
+        # Add an extra scale factor for massive objects to help "decouple"
+        self.s2j[self.mj > self.zeta_lim] *= self.zeta
+
         self.raj = self.ra*self.mu**self.eta        # equation (25) GZ15
 
         self.phi0j = self.phi0/self.s2j
@@ -410,12 +445,17 @@ class limepy:
         self.alpha/=sum(self.alpha)
 
         self._set_mass_function_variables()
-        self.diff = sum((self._Mjtot/sum(self._Mjtot) -
-                         self.Mj/sum(self.Mj))**2)/len(self._Mjtot)
-        # Better:?
-        #        Mj_norm_out = self._Mjtot/sum(self._Mjtot)
-        #        self.diff = max(abs(Mj_norm_out/self.Mj - 1))
-        
+
+        Mj_norm_out = self._Mjtot/sum(self._Mjtot)
+
+        if self.diffdef.lower() == 'mse':
+            self.diff = sum((Mj_norm_out - self.Mj/sum(self.Mj))**2)/len(self._Mjtot)
+
+        elif self.diffdef.lower() == 'rel':
+            self.diff = max(abs((Mj_norm_out * (self.Mj.sum() / self.Mj)) - 1))
+        else:
+            raise ValueError("Invalid diffdef, must be 'mse' or 'rel'")
+
         self.niter+=1
         self.nstep=1
         if (self.verbose):
@@ -445,7 +485,7 @@ class limepy:
         # (Hairor, Norsett& Wanner 1993)
         max_step = self.maxr if (potonly) else self.max_step
         sol = ode(self._odes)
-        sol.set_integrator('dopri5',nsteps=1e6,max_step=max_step,
+        sol.set_integrator(self.ode_method,nsteps=1e6,max_step=max_step,
                            atol=self.ode_atol,rtol=self.ode_rtol)
         sol.set_solout(self._logcheck)
         sol.set_f_params(potonly)
