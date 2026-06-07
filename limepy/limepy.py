@@ -412,6 +412,10 @@ class limepy:
         self._set_mass_function_variables()
         self.diff = sum((self._Mjtot/sum(self._Mjtot) -
                          self.Mj/sum(self.Mj))**2)/len(self._Mjtot)
+        # Better:?
+        #        Mj_norm_out = self._Mjtot/sum(self._Mjtot)
+        #        self.diff = max(abs(Mj_norm_out/self.Mj - 1))
+        
         self.niter+=1
         self.nstep=1
         if (self.verbose):
@@ -1171,4 +1175,3 @@ class limepy:
         return DF
 
 
-###k=limepy(4,1,project=True,M=1,G=1,rv=1,mj=[0.1,1],Mj=[1,0.1],verbose=True)
